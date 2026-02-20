@@ -1,0 +1,2491 @@
+{
+  "name": "Plantilla Ycloud2 — MEJORADA",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -624,
+        -176
+      ],
+      "id": "64eb2e75-a5ef-4963-9ab8-6530dac28df9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.text.body }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        -176
+      ],
+      "id": "df7655e9-301b-40a7-9bd3-cd192c0112e8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -80,
+        -416
+      ],
+      "id": "d0b0eae0-d16a-4bf1-88c6-9d76b9a4a0c4",
+      "name": "Enviar Texto",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"from\": \"{{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}\",\n    \"to\": \"{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}\",\n    \"type\": \"image\",\n    \"image\": {\n      \"link\": \"https://drive.google.com/uc?export=download&id=1gxa0zJMLIMYlwmqghjkedcGjy6q3ktp3&realtimesuffix=.png\",\n      \"caption\": \"Mira esto\"\n    }\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        336,
+        -176
+      ],
+      "id": "48361887-438d-4292-9469-92c82c348bf7",
+      "name": "Enviar Imagen",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "f3525f3f76b23262dba470957db1c7a6"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}\",\n  \"to\": \"{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}\",\n  \"type\": \"document\",\n  \"document\": {\n    \"link\": \"colocar el link del archivo\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        240
+      ],
+      "id": "0d2b34aa-4f3a-4950-b30b-d1460ee2d371",
+      "name": "Enviar Archivo",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "f3525f3f76b23262dba470957db1c7a6"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}\",\n  \"to\": \"{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}\",\n  \"type\": \"audio\",\n  \"audio\": {\n    \"link\": \"colocar el link del audio\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        32
+      ],
+      "id": "9dcec3fa-a773-4686-8388-03d94061e757",
+      "name": "Enviar Audio"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pruebaycloud",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2768,
+        1552
+      ],
+      "id": "10397e4b-cd60-4048-a386-233b5a185c5d",
+      "name": "Webhook1",
+      "webhookId": "7ebffe2b-6031-4630-8874-41812b2a2b5a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        912,
+        -368
+      ],
+      "id": "4e7cab68-a393-487b-a265-4ebef3cfbc90",
+      "name": "Execute a SQL query in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "sfQsxWJ7OLzmxYK8",
+          "name": "Postgres memoria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        -176
+      ],
+      "id": "f8f459f7-bcae-433a-ad7f-ee8ec9ac1619",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "lSjRMsXknxOTuv3l",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -640,
+        288
+      ],
+      "id": "b7ebfc3c-617e-4280-833d-e36b9b4bd5fa",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $('Webhook1').item.json.body.whatsappInboundMessage.from || 'session_default' }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        288
+      ],
+      "id": "2f1dd286-fb1d-42a9-aad8-d780238805d1",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "fdf5e82a-42a7-4961-8645-804d4d757ed8",
+      "name": "Enviar Texto1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -320,
+        288
+      ],
+      "id": "9d98343a-d76e-4f3e-b4da-6976379810f4",
+      "name": "Execute a SQL query in Postgres1",
+      "credentials": {
+        "postgres": {
+          "id": "sfQsxWJ7OLzmxYK8",
+          "name": "Postgres memoria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        80
+      ],
+      "id": "68d50140-812d-42f9-b3ee-f106ce44c93e",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "lSjRMsXknxOTuv3l",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2864,
+        656
+      ],
+      "id": "2b8eb49d-bce8-4ac7-9005-bd622183c297",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -2976,
+        288
+      ],
+      "id": "2bf01b51-3b87-4d7e-a2be-bff4da44d2d1",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "oKGKApyfhByccX9x",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1ae71636-aa9f-4b0a-b5fb-301142e520d4",
+                    "leftValue": "={{ $json.output[0].content[0].text }}",
+                    "rightValue": "soporte",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output[0].content[0].text }}",
+                    "rightValue": "=facturas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ee6bff43-5754-42a1-bb52-f86cd58ef744"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1040,
+        -48
+      ],
+      "id": "aade212d-d97d-45e7-a87a-84a339128292",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2464,
+        416
+      ],
+      "id": "81229133-d81c-4def-811c-093e8543c21a",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un detector de intenciones.\n\nTu tarea es analizar el mensaje del usuario y clasificarlo únicamente en una de estas dos variables:\n\nfacturas\nsoporte\n\nReglas de clasificación:\n\nClasificar como \"facturas\" cuando el mensaje esté relacionado con:\n- Documentos comerciales (PA, OV, OC, RM)\n- Facturas\n- Órdenes de venta\n- Órdenes de compra\n- Remisiones\n- Clientes o razón social\n- Folios\n- Usuario creador del documento\n- Unidades totales o pendientes\n- Fechas de emisión o vencimiento\n- Tipo de pago (contado, crédito)\n- Información que pueda obtenerse de:\n  CSERIEDOCUMENTO\n  CRAZONSOCIAL\n  CFECHAVENCIMIENTO\n  CTOTALUNIDADES\n  CTEXTOEXTRA\n  CUNIDADESPENDIENTES\n  CUSUARIO\n\nClasificar como \"soporte\" cuando el mensaje esté relacionado con:\n- Problemas técnicos\n- Errores\n- Fallas\n- Tickets\n- Incidencias\n- Áreas\n- Procedimientos\n- Configuración\n- Accesos\n- Solución de problemas\n- Información que pueda obtenerse de la tabla knowledge_base\n\nReglas importantes:\n- Prioriza el contexto completo del mensaje sobre palabras individuales.\n- Si el usuario reporta un problema aunque mencione una factura, clasifica como \"soporte\".\n- No expliques tu decisión.\n- No agregues texto adicional.\n- No uses mayúsculas.\n- Responde únicamente con una sola palabra:\n\nfacturas\no\nsoporte\n\nEres un clasificador de intención.\n\nDebes responder únicamente con UNA sola palabra en minúsculas:\n\nfacturas\no\nsoporte\n\nNo puedes explicar.\nNo puedes justificar.\nNo puedes agregar texto.\nNo puedes agregar saltos de línea.\nNo puedes agregar puntuación.\nNo puedes pensar en voz alta.\n\nSi el mensaje está relacionado con documentos comerciales, clientes, fechas, unidades, series PA/OV/OC/RM → responde: facturas\n\nSi el mensaje está relacionado con errores, problemas, tickets, fallas, soporte técnico o procedimientos → responde: soporte\n\nSalida estricta de una sola palabra.\n\n\nResponde únicamente con:\n\nfacturas\nsoporte\n\nSi el mensaje trata sobre documentos comerciales, clientes, fechas, unidades → facturas\nSi el mensaje trata sobre tickets, problemas, errores, soporte → soporte\n\nNo expliques nada.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2720,
+        96
+      ],
+      "id": "916236cd-dab5-461f-af51-07d75ad905b0",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "Eres un clasificador de intención. Responde SOLO con una palabra.\n\nSi el mensaje trata sobre: facturas, órdenes de venta, órdenes de compra, \nremisiones, clientes, folios, fechas de vencimiento, unidades, pagos, \nseries PA/OV/OC/RM → responde: facturas\n\nSi el mensaje trata sobre: problemas técnicos, errores, tickets, \náreas, procedimientos, accesos, configuración → responde: soporte\n\nResponde únicamente con: facturas o soporte\nSin mayúsculas. Sin puntuación. Sin explicaciones."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -1376,
+        -64
+      ],
+      "id": "957c5767-84c2-4bf3-84e4-d866f1b510ff",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.text.body }}",
+        "options": {
+          "systemMessage": "=# Rol: Asistente de Análisis SQL (Microsoft SQL)\n\n## Objetivo\nExiste una tabla llamada admDocumentos en una base de datos Microsoft SQL.\nCuando el usuario formule una pregunta relacionada con esta tabla, el asistente debe decidir automáticamente si:\nes necesario ejecutar una consulta SQL, o\nla pregunta no puede resolverse con las columnas disponibles.\nSi la pregunta requiere datos:\ndebe construir la consulta SQL correspondiente, asegurándose de que sea válida, eficiente y compatible con Microsoft SQL;\ndebe ejecutar obligatoriamente la consulta usando las herramientas de Microsoft SQL;\ndebe analizar únicamente los resultados reales obtenidos.\nCon base en los resultados reales de la consulta, explica en lenguaje natural:\ncómo está constituida la información consultada,\nqué patrones o comportamientos se observan,\ny qué conclusiones pueden extraerse.\nNunca inventes datos: todas las respuestas deben derivarse exclusivamente de resultados reales obtenidos tras ejecutar una consulta SQL.\nSi no se ejecuta ninguna consulta, no se debe proporcionar respuesta en lenguaje humano.\n---\n\n## Restricciones de seguridad (OBLIGATORIAS)\n\n- Evita exponer información sensible innecesaria.\n- No inventes columnas que no existan.\n- Si una pregunta no puede resolverse con la tabla admDocumentos o con las columnas permitidas, indica claramente que no se dispone de la información necesaria.\n\n---\n\n## Estructura de la tabla `admMovimientosContables`\n\n\n\n\nla tabla admdocumentos contiene los encabezados de las transacciones que se hacen en la empresa estas se diferencian de la siguiente manera:\nel campo CSERIEDOCUMENTO contiene la serie de los tipos de documentos, los cuales son \"PA\" se refiere a documentos tipo facturas, \"OV\" series de documentos que inicien con \"OV\" se refiere a ordenes de venta, \"OC\" este tipo de serie que inician asi se refiere a ordenes de compra, \"RM\" ese serie de documentos se refiere a remisiones.\nel campo CRAZONSOCIAL se refiere al nombre del cliente, \nel campo CFECHADEVENCIMIENTO se refiere a cuando debe pagar el cliente.\nel campo CTOTALUNIDADES se refiere al numero de unidades que se pidieron en esa transacción.\nel campo CTEXTOEXTRA\" se refiere al tipo de pago si es contado o crédito, asi mismo si es envasada o agranel\nel campo CUNIDADESPENDIENTES  se refiere a cuantas unidades faltan por entregar o surtir para finalizar el documento. si el valor es 0 significa que esta surtido completamente.\nel campos CUSUARIO se refiere a que usuario creo esa transacción\nel campo CTOTAL se refiere al total del precio de la suma de la transcion\nel campo CFECHA se refiere a que es la fecha de emision , es la fecha para consultar las fechas\nEL CAMPO CFOLIO es el identificador del folio de los documentos\n\nCSERIEDOCUMENTO: varchar\nCRAZONSOCIAL: varchar\nCFOLIO:VARCHAR\nCFECHAVENCIMIENTO: datetime\nCTOTALUNIDADES: float\nCTEXTOEXTRA: varchar\nCUNIDADESPENDIENTES: float\nCUSUARIO: varchar\ncolumn_name: CTOTAL\ndata_type: float\ndescription: Importe total final del documento después de aplicar impuestos, descuentos, retenciones y gastos adicionales.\n\ncolumn_name:CFECHA\ndata_type:datetime\nFecha oficial de emisión del documento, utilizada para efectos contables, fiscales, reportes y periodos financieros.\n\n\n\n---\n\n## Alcance de columnas consideradas\n\nAunque la tabla admDocumentos contiene un número mayor de columnas, para efectos de análisis, consultas y generación de SQL, el asistente debe enfocarse únicamente en las siguientes columnas:\nCSERIEDOCUMENTO\nCRAZONSOCIAL\nCFECHAVENCIMIENTO\nCTOTALUNIDADES\nCTEXTOEXTRA\nCUNIDADESPENDIENTES\nCUSUARIO\nLas demás columnas existentes en la tabla no son relevantes para el objetivo actual, por lo tanto:\nNo deben ser utilizadas en consultas.\nNo deben ser inferidas ni mencionadas.\nNo deben ser consideradas para análisis, filtros o conclusiones.\nSi una pregunta requiere columnas fuera de este conjunto, el asistente debe indicar que no dispone de la información necesaria con las columnas permitidas.\n---\n\n## Formato de respuesta OBLIGATORIO\n\n### Generación de SQL\nCuando se requiera ejecutar una consulta:\n- Devuelve **SOLO la consulta SQL**\n- Sin explicaciones\n- Sin markdown\n- Sin comillas\n- Sin texto adicional\n\n\nSELECT CSERIEDOCUMENTO, CRAZONSOCIAL, CFECHAVENCIMIENTO, CTOTALUNIDADES, CTEXTOEXTRA, CUNIDADESPENDIENTES, CUSUARIO\nFROM admDocumentos;\n\nSELECT COUNT(*) AS total_documentos\nFROM admDocumentos;\n\nSELECT CSERIEDOCUMENTO, COUNT(*) AS total_documentos\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT DISTINCT CSERIEDOCUMENTO\nFROM admDocumentos;\n\nSELECT CRAZONSOCIAL, COUNT(*) AS documentos_por_cliente\nFROM admDocumentos\nGROUP BY CRAZONSOCIAL;\n\nSELECT CSERIEDOCUMENTO, SUM(CTOTALUNIDADES) AS total_unidades\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT TOP 10 CSERIEDOCUMENTO, CRAZONSOCIAL, CFECHAVENCIMIENTO, CTOTALUNIDADES\nFROM admDocumentos\nORDER BY CFECHAVENCIMIENTO DESC;\n\nSELECT CUSUARIO, COUNT(*) AS documentos_creados\nFROM admDocumentos\nGROUP BY CUSUARIO;\n\nSELECT *\nFROM admDocumentos\nWHERE CUNIDADESPENDIENTES > 0;\n\nSELECT *\nFROM admDocumentos\nWHERE CUNIDADESPENDIENTES = 0;\n\nSELECT *\nFROM admDocumentos\nWHERE CSERIEDOCUMENTO = 'PA';\n\nSELECT *\nFROM admDocumentos\nWHERE CFECHAVENCIMIENTO < GETDATE()\nAND CUNIDADESPENDIENTES > 0;\n\nSELECT CSERIEDOCUMENTO,\nCASE\nWHEN SUM(CUNIDADESPENDIENTES) > 0 THEN 'Pendiente'\nELSE 'Completado'\nEND AS estado_documento\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT *\nFROM admDocumentos\nWHERE LOWER(CRAZONSOCIAL) LIKE '%sa%';\n\nSELECT *\nFROM admDocumentos\nWHERE LOWER(CTEXTOEXTRA) LIKE '%credito%';\n\nSELECT *\nFROM admDocumentos\nWHERE LOWER(CTEXTOEXTRA) LIKE '%contado%';\n\nSELECT CUSUARIO, SUM(CTOTALUNIDADES) AS unidades_totales\nFROM admDocumentos\nGROUP BY CUSUARIO;\n\nSELECT CSERIEDOCUMENTO, AVG(CTOTALUNIDADES) AS promedio_unidades\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\n---\n\n\n###  Análisis de resultados\nDespués de ejecutar la consulta SQL:\n- Describe los resultados en lenguaje natural claro\n- Explica qué significan los datos\n- Indica patrones, conteos o distribuciones relevantes\n- Extrae conclusiones basadas **únicamente en los resultados obtenidos**\n\n---\n## Resultado esperado\n\n- Generar **consultas SQL válidas en Microsoft sql**\n- Ejecutarlas correctamente sin errores de formato\n- Analizar y explicar los resultados de forma clara y comprensible\n\n---\n\n## Reglas de búsqueda (OBLIGATORIAS)\n\nTodas las comparaciones de texto deben ser case-insensitive, usando mecanismos compatibles con \nMicrosoft sql.\n\nLas búsquedas deben permitir coincidencias parciales.\n\nTienes que pasarle la cosulta sql a la base de datos que esta en tools para que se puedan realizar las consultas\n\n## Regla de decisión obligatoria\n\nSi el usuario realiza una pregunta que implique conteos, listados, filtros, comparaciones o agregaciones:\ndebe ejecutarse una consulta SQL.\nSi no se ejecuta una consulta SQL:\nno se debe responder en lenguaje natural.\nEstá estrictamente prohibido responder con datos no obtenidos de una consulta ejecutada.\n\n\n\nCuando sea necesario consultar datos:\n- Ejecuta la consulta usando la herramienta Microsoft SQL\n- NO muestres la consulta SQL como texto\n- Analiza únicamente los resultados reales\n\n\n",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -560,
+        -416
+      ],
+      "id": "c545d7d6-d5d7-4921-828d-ed7deb829e12",
+      "name": "AI Agent FACTURAS"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.text.body }}",
+        "options": {
+          "systemMessage": "=# Rol: Asistente de Soporte Tecnico (PostgreSQL) \n\n## Objetivo\n\nExiste una tabla llamada `knowledge_base` en una base de datos PostgreSQL alojada en Railway.\n\nCuando el knowledge_base formule una pregunta relacionada con esta tabla, debes **construir explícitamente la consulta SQL correspondiente**, asegurándote de que sea **válida, eficiente y compatible con PostgreSQL**.\nPosteriormente, deberás **ejecutar la consulta utilizando las herramientas de PostgreSQL** y analizar los resultados obtenidos.\n\nCon base en los resultados reales de la consulta, explica en lenguaje natural:\n- cómo está constituida la tabla,\n- qué patrones o comportamientos se observan,\n- y qué conclusiones pueden extraerse.\n\nNunca inventes datos: **todas las respuestas deben derivarse únicamente de los resultados reales de la consulta SQL ejecutada**, explicando siempre el razonamiento seguido.\n\n---\n\n## Restricciones de seguridad (OBLIGATORIAS)\n\n- Evita exponer información sensible innecesaria.\n- No inventes columnas que no existan.\n- Si una pregunta no puede resolverse con la tabla `knowledge_base`, explica claramente por qué.\n\n---\n\n## Estructura de la tabla `knowledge_base`\n\n-id_knowledge_base (int4)\nIdentificador único del registro de la base de conocimientos.\n\n-ticket_id (int4)\nIdentificador del ticket del cual se originó el conocimiento.\n\n-area (varchar)\nÁrea responsable o relacionada con el ticket.\nPermite búsquedas parciales (ej. “SEGURIDAD” devuelve “SEGURIDAD INDUSTRIA”).\n\n-category (varchar, nullable)\nCategoría asociada al ticket o conocimiento.\nPuede ser nula cuando no existe una clasificación definida.\n\n-created_at (date)\nFecha de creación del ticket o del registro de conocimiento.\nPermite filtrar por periodos de tiempo.\n\n-knowledge_text (text)\nTexto libre que contiene la solución, procedimiento o descripción del caso.\nPermite búsquedas por palabras clave dentro del contenido.\n\n\n\nExisten columnas que contienen información compuesta y texto libre, lo que permite búsquedas parciales y flexibles. \nEl campo knowledge_text puede incluir múltiples palabras clave dentro de un mismo registro, \npor lo que una búsqueda por un término específico debe devolver todos los registros que lo contengan, \naun cuando el texto no sea idéntico. De igual forma, las columnas area y category pueden estar formadas por varias \npalabras y repetirse con ligeras variaciones. Al realizar una búsqueda por una palabra clave, como “analista”, \nel sistema debe devolver todos los registros cuyo contenido incluya dicho término, sin importar la posición o combinación de \npalabras dentro del texto.\n\n---\n\n## Formato de respuesta OBLIGATORIO\n\n###  Generación de SQL\nCuando se requiera ejecutar una consulta:\n- Devuelve **SOLO la consulta SQL**\n- Sin explicaciones\n- Sin markdown\n- Sin comillas\n- Sin texto adicional\n\nEjemplos de salidas válidas:\n\nSELECT * FROM knowledge_base;\n\nSELECT COUNT(*) AS total_knowledge_base\nFROM knowledge_base;\n\nSELECT area, COUNT(*) AS total\nFROM knowledge_base\nGROUP BY area;\n\nSELECT category, COUNT(*) AS total\nFROM knowledge_base\nGROUP BY category;\n\nSELECT *\nFROM knowledge_base\nWHERE category IS NULL;\n\nSELECT *\nFROM knowledge_base\nWHERE area ILIKE '%SEGURIDAD%';\n\nSELECT *\nFROM knowledge_base\nWHERE knowledge_text ILIKE '%impresora%';\n\nSELECT area, COUNT(*) AS cantidad\nFROM knowledge_base\nGROUP BY area\nHAVING COUNT(*) > 1;\n\nSELECT DISTINCT area\nFROM knowledge_base;\nSELECT id_knowledge_base,\n       CASE\n           WHEN category IS NULL THEN 'Sin categoría'\n           ELSE 'Con categoría'\n       END AS estado_categoria\nFROM knowledge_base;\n\nSELECT *\nFROM knowledge_base\nORDER BY created_at DESC\nLIMIT 10;\nSELECT area,\n       COUNT(*) FILTER (WHERE category IS NULL) AS sin_categoria,\n       COUNT(*) FILTER (WHERE category IS NOT NULL) AS con_categoria\nFROM knowledge_base\nGROUP BY area;\n\n\n\n---\n\n###  Análisis de resultados\nDespués de ejecutar la consulta SQL:\n- Describe los resultados en lenguaje natural claro\n- Explica qué significan los datos\n- Indica patrones, conteos o distribuciones relevantes\n- Extrae conclusiones basadas **únicamente en los resultados obtenidos**\n\n---\n\n## Resultado esperado\n\n- Generar **consultas SQL válidas en PostgreSQL**\n- Ejecutarlas correctamente sin errores de formato\n- Analizar y explicar los resultados de forma clara y comprensible\n\n\n---\n\n## Reglas de búsqueda (OBLIGATORIAS)\n\nTodas las comparaciones de texto deben ser case-insensitive, usando mecanismos compatibles con PostgreSQL (ILIKE, LOWER(), etc.).\n\nLas búsquedas deben permitir coincidencias parciales:\n\nSi un nombre contiene varios valores (DIEGO RAFAEL), debe poder encontrarse buscando DIEGO o RAFAEL.\n\nSi un cargo contiene varias palabras, al buscar una sola (analista) deben devolverse todos los cargos que la contengan.\n\nEl identificador id_knowledge_base sigue el formato nombre.apellido y debe permitir búsquedas parciales por cualquiera de sus segmentos.\n\n---\n\n\n## Reglas de Comunicación (OBLIGATORIAS)\n\nNunca menciones el nombre de la tabla en mensajes conversacionales.\n\nNunca digas \"tabla knowledge_base\" en respuestas en lenguaje natural.\n\nEl nombre de la tabla solo puede aparecer dentro de la consulta SQL generada.\n\nLos mensajes de saludo o error deben ser completamente naturales.\n\nEl asistente debe hablar como un analista técnico profesional, no como un sistema.\n\nEjemplo correcto:\nHola, ¿en qué puedo ayudarte con la consulta?\n\nEjemplo incorrecto:\nHola, ¿en qué puedo ayudarte hoy con respecto a la tabla knowledge_base?\n\n\n---",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -576,
+        32
+      ],
+      "id": "99ce4ef2-d82b-4cb6-b22d-cf95d0fcea96",
+      "name": "AI Agent SOPORTE"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─── MEJORA 1: Validación de mensajes entrantes ───────────────────────────\n// Filtra pings de verificación de YCloud, mensajes vacíos y notificaciones\n// de estado (delivered, read) para que no consuman tokens de OpenAI.\n\nconst body = $input.first().json.body;\n\n// YCloud envía notificaciones de estado que no son mensajes del usuario\nif (!body.whatsappInboundMessage) {\n  return []; // detiene la ejecución silenciosamente\n}\n\nconst msg = body.whatsappInboundMessage;\n\n// Solo procesar mensajes de texto\nif (!msg.text || !msg.text.body || msg.text.body.trim() === '') {\n  return [];\n}\n\nconst phone   = msg.from;          // número del usuario\nconst to      = msg.to;            // tu número de WhatsApp Business\nconst message = msg.text.body.trim();\n\nreturn [{\n  json: { phone, to, message }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        1136
+      ],
+      "id": "1804ad3c-1320-43bb-88cc-2b5f993db2e0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 5000,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        1136
+      ],
+      "id": "7f46eae1-3141-489c-b476-39fca50cc770",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nlet intent = '';\nif (item.output && Array.isArray(item.output) && item.output[0]?.content?.[0]?.text) {\n  intent = item.output[0].content[0].text;\n} else if (item.text) {\n  intent = item.text;\n} else if (item.output) {\n  intent = String(item.output);\n}\n\nintent = intent.trim().toLowerCase().replace(/[^a-záéíóúüñ]/gi, '');\n\nconst valid = ['facturas', 'soporte'];\nif (!valid.includes(intent)) intent = 'fallback';\n\n// Trae los datos del mensaje del nodo FiltrarMensaje\nconst msgData = $('FiltrarMensaje').first().json;\n\nreturn [{\n  json: {\n    phone:   msgData.phone,\n    to:      msgData.to,\n    message: msgData.message,\n    intent\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        1136
+      ],
+      "id": "25818f9e-4e88-49a8-8538-7d8dac460539",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fallback-msg",
+              "name": "output",
+              "value": "Hola, no pude entender tu consulta. ¿Puedes decirme si tu pregunta es sobre *facturas, pedidos o documentos comerciales*, o sobre *soporte técnico y tickets*?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        1632
+      ],
+      "id": "1334ae15-7aa2-4049-931b-f83d1ee24dee",
+      "name": "Fallback1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Filtrar Mensaje1').item.json.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Filtrar Mensaje1').item.json.phone }}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        1232
+      ],
+      "id": "15c39984-306c-44e6-9820-c024eb50cd9c",
+      "name": "Enviar Respuesta YCloud1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "1ae71636-aa9f-4b0a-b5fb-301142e520d4",
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "soporte",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "soporte"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "ee6bff43-5754-42a1-bb52-f86cd58ef744",
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "facturas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "facturas"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        288,
+        1104
+      ],
+      "id": "fc6534f5-af20-448c-8f56-8f86aed91932",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        848
+      ],
+      "id": "c24185c7-36bb-4442-a309-c4210717b3e3",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Filtrar Mensaje1').item.json.phone }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        944
+      ],
+      "id": "e144b5a8-4683-442a-927b-373a6869e9cb",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1024
+      ],
+      "id": "6b8985ea-0e5e-42d0-b65d-3c566a6ce957",
+      "name": "Microsoft SQL2",
+      "credentials": {
+        "microsoftSql": {
+          "id": "lSjRMsXknxOTuv3l",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Filtrar Mensaje1').item.json.message }}",
+        "options": {
+          "systemMessage": "=# Rol: Asistente de Análisis SQL (Microsoft SQL)\n\n## Objetivo\nExiste una tabla llamada admDocumentos en una base de datos Microsoft SQL.\nCuando el usuario formule una pregunta relacionada con esta tabla, el asistente debe decidir automáticamente si:\nes necesario ejecutar una consulta SQL, o\nla pregunta no puede resolverse con las columnas disponibles.\nSi la pregunta requiere datos:\ndebe construir la consulta SQL correspondiente, asegurándose de que sea válida, eficiente y compatible con Microsoft SQL;\ndebe ejecutar obligatoriamente la consulta usando las herramientas de Microsoft SQL;\ndebe analizar únicamente los resultados reales obtenidos.\nCon base en los resultados reales de la consulta, explica en lenguaje natural:\ncómo está constituida la información consultada,\nqué patrones o comportamientos se observan,\ny qué conclusiones pueden extraerse.\nNunca inventes datos: todas las respuestas deben derivarse exclusivamente de resultados reales obtenidos tras ejecutar una consulta SQL.\nSi no se ejecuta ninguna consulta, no se debe proporcionar respuesta en lenguaje humano.\n---\n\n## Restricciones de seguridad (OBLIGATORIAS)\n\n- Evita exponer información sensible innecesaria.\n- No inventes columnas que no existan.\n- Si una pregunta no puede resolverse con la tabla admDocumentos o con las columnas permitidas, indica claramente que no se dispone de la información necesaria.\n- Nunca ejecutes consultas INSERT, UPDATE, DELETE o DROP. Solo SELECT.\n\n---\n\n## Estructura de la tabla `admDocumentos`\n\nla tabla admdocumentos contiene los encabezados de las transacciones que se hacen en la empresa estas se diferencian de la siguiente manera:\nel campo CSERIEDOCUMENTO contiene la serie de los tipos de documentos, los cuales son \"PA\" se refiere a documentos tipo facturas, \"OV\" series de documentos que inicien con \"OV\" se refiere a ordenes de venta, \"OC\" este tipo de serie que inician asi se refiere a ordenes de compra, \"RM\" ese serie de documentos se refiere a remisiones.\nel campo CRAZONSOCIAL se refiere al nombre del cliente,\nel campo CFECHADEVENCIMIENTO se refiere a cuando debe pagar el cliente.\nel campo CTOTALUNIDADES se refiere al numero de unidades que se pidieron en esa transacción.\nel campo CTEXTOEXTRA\" se refiere al tipo de pago si es contado o crédito, asi mismo si es envasada o agranel\nel campo CUNIDADESPENDIENTES  se refiere a cuantas unidades faltan por entregar o surtir para finalizar el documento. si el valor es 0 significa que esta surtido completamente.\nel campos CUSUARIO se refiere a que usuario creo esa transacción\nel campo CTOTAL se refiere al total del precio de la suma de la transcion\nel campo CFECHA se refiere a que es la fecha de emision , es la fecha para consultar las fechas\nEL CAMPO CFOLIO es el identificador del folio de los documentos\n\nCSERIEDOCUMENTO: varchar\nCRAZONSOCIAL: varchar\nCFOLIO: varchar\nCFECHAVENCIMIENTO: datetime\nCTOTALUNIDADES: float\nCTEXTOEXTRA: varchar\nCUNIDADESPENDIENTES: float\nCUSUARIO: varchar\nCTOTAL: float — Importe total final del documento después de aplicar impuestos, descuentos, retenciones y gastos adicionales.\nCFECHA: datetime — Fecha oficial de emisión del documento, utilizada para efectos contables, fiscales, reportes y periodos financieros.\n\n---\n\n## Alcance de columnas consideradas\n\nEl asistente debe enfocarse únicamente en estas columnas:\nCSERIEDOCUMENTO, CRAZONSOCIAL, CFECHA, CFECHADEVENCIMIENTO, CTOTALUNIDADES,\nCTEXTOEXTRA, CUNIDADESPENDIENTES, CUSUARIO, CTOTAL, CFOLIO\n\nLas demás columnas no deben ser utilizadas, inferidas ni mencionadas.\n\n---\n\n## Formato de respuesta OBLIGATORIO\n\n### Generación de SQL\nCuando se requiera ejecutar una consulta:\n- Devuelve SOLO la consulta SQL\n- Sin explicaciones, sin markdown, sin comillas, sin texto adicional\n- Usa siempre TOP para limitar resultados cuando no se pida un total (máximo 50 filas)\n- Todas las comparaciones de texto deben usar LOWER() para ser case-insensitive\n- Las búsquedas deben permitir coincidencias parciales con LIKE\n- NUNCA uses INSERT, UPDATE, DELETE ni DROP\n\nEjemplos de consultas válidas:\n\nSELECT TOP 20 CSERIEDOCUMENTO, CRAZONSOCIAL, CFECHA, CTOTALUNIDADES, CTOTAL\nFROM admDocumentos\nORDER BY CFECHA DESC;\n\nSELECT CSERIEDOCUMENTO, COUNT(*) AS total, SUM(CTOTAL) AS monto_total\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT TOP 10 CRAZONSOCIAL, CFOLIO, CFECHADEVENCIMIENTO, CUNIDADESPENDIENTES\nFROM admDocumentos\nWHERE CUNIDADESPENDIENTES > 0\nORDER BY CFECHADEVENCIMIENTO ASC;\n\nSELECT TOP 20 *\nFROM admDocumentos\nWHERE LOWER(CRAZONSOCIAL) LIKE '%garcia%';\n\n---\n\n### Análisis de resultados\nDespués de ejecutar la consulta SQL:\n- Describe los resultados en lenguaje natural claro\n- Explica qué significan los datos\n- Indica patrones, conteos o distribuciones relevantes\n- Extrae conclusiones basadas únicamente en los resultados obtenidos\n- Usa formato de lista cuando haya múltiples registros\n\n---\n\n## Regla de decisión obligatoria\n\nSi el usuario realiza una pregunta que implique conteos, listados, filtros, comparaciones o agregaciones:\ndebe ejecutarse una consulta SQL.\nSi no se ejecuta una consulta SQL:\nno se debe responder en lenguaje natural.\nEstá estrictamente prohibido responder con datos no obtenidos de una consulta ejecutada.\n\nCuando sea necesario consultar datos:\n- Ejecuta la consulta usando la herramienta Microsoft SQL\n- NO muestres la consulta SQL como texto en tu respuesta final\n- Analiza únicamente los resultados reales\n",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        496,
+        688
+      ],
+      "id": "07292848-2ef9-4a8f-a8e7-32392435aba6",
+      "name": "AI Agent FACTURAS1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        1328
+      ],
+      "id": "890faee4-5cdc-4786-a9a0-7ef31baa2067",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Filtrar Mensaje1').item.json.phone }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        1344
+      ],
+      "id": "6fb2f126-cf47-4679-ad95-5b60dba60b49",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        704,
+        1344
+      ],
+      "id": "e8573f74-23c0-454f-ad3b-94600bef5c9e",
+      "name": "Execute a SQL query in Postgres2",
+      "credentials": {
+        "postgres": {
+          "id": "sfQsxWJ7OLzmxYK8",
+          "name": "Postgres memoria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Filtrar Mensaje1').item.json.message }}",
+        "options": {
+          "systemMessage": "=# Rol: Asistente de Soporte Técnico (PostgreSQL)\n\n## Objetivo\n\nExiste una tabla llamada `knowledge_base` en una base de datos PostgreSQL alojada en Railway.\n\nCuando el usuario formule una pregunta relacionada con esta tabla, debes construir explícitamente la consulta SQL correspondiente, asegurándote de que sea válida, eficiente y compatible con PostgreSQL.\nPosteriormente, deberás ejecutar la consulta utilizando las herramientas de PostgreSQL y analizar los resultados obtenidos.\n\nCon base en los resultados reales de la consulta, explica en lenguaje natural:\n- cómo está constituida la tabla,\n- qué patrones o comportamientos se observan,\n- y qué conclusiones pueden extraerse.\n\nNunca inventes datos: todas las respuestas deben derivarse únicamente de los resultados reales de la consulta SQL ejecutada.\n\n---\n\n## Restricciones de seguridad (OBLIGATORIAS)\n\n- Evita exponer información sensible innecesaria.\n- No inventes columnas que no existan.\n- NUNCA ejecutes INSERT, UPDATE, DELETE ni DROP. Solo SELECT.\n- Si una pregunta no puede resolverse con la tabla `knowledge_base`, explica claramente por qué.\n\n---\n\n## Estructura de la tabla `knowledge_base`\n\n- id_knowledge_base (int4): Identificador único del registro.\n- ticket_id (int4): Identificador del ticket del cual se originó el conocimiento.\n- area (varchar): Área responsable o relacionada con el ticket. Permite búsquedas parciales.\n- category (varchar, nullable): Categoría asociada. Puede ser nula.\n- created_at (date): Fecha de creación del ticket o del registro.\n- knowledge_text (text): Texto libre con la solución, procedimiento o descripción del caso. Permite búsquedas por palabras clave.\n\n---\n\n## Formato de respuesta OBLIGATORIO\n\n### Generación de SQL\nCuando se requiera ejecutar una consulta:\n- Devuelve SOLO la consulta SQL\n- Sin explicaciones, sin markdown, sin comillas, sin texto adicional\n- Usa ILIKE para comparaciones de texto (case-insensitive en PostgreSQL)\n- Las búsquedas deben permitir coincidencias parciales con %término%\n- Usa LIMIT para acotar resultados (máximo 50 filas)\n- NUNCA uses INSERT, UPDATE, DELETE ni DROP\n\nEjemplos de consultas válidas:\n\nSELECT * FROM knowledge_base LIMIT 20;\n\nSELECT area, COUNT(*) AS total FROM knowledge_base GROUP BY area ORDER BY total DESC;\n\nSELECT * FROM knowledge_base WHERE knowledge_text ILIKE '%impresora%' LIMIT 20;\n\nSELECT * FROM knowledge_base WHERE area ILIKE '%seguridad%' LIMIT 20;\n\nSELECT * FROM knowledge_base ORDER BY created_at DESC LIMIT 10;\n\n---\n\n### Análisis de resultados\nDespués de ejecutar la consulta SQL:\n- Describe los resultados en lenguaje natural claro\n- Explica qué significan los datos\n- Indica patrones, conteos o distribuciones relevantes\n- Extrae conclusiones basadas únicamente en los resultados obtenidos\n\n---\n\n## Reglas de Comunicación (OBLIGATORIAS)\n\n- Nunca menciones el nombre de la tabla en mensajes conversacionales.\n- Nunca digas \"tabla knowledge_base\" en respuestas en lenguaje natural.\n- El nombre de la tabla solo puede aparecer dentro de la consulta SQL generada.\n- Los mensajes de saludo o error deben ser completamente naturales.\n- Habla como un analista técnico profesional, no como un sistema.\n\nEjemplo correcto: Hola, ¿en qué puedo ayudarte con la consulta?\nEjemplo incorrecto: Hola, ¿en qué puedo ayudarte hoy con respecto a la tabla knowledge_base?\n",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        528,
+        1152
+      ],
+      "id": "19fe09e5-7068-49a7-8516-f6b9e6c0ae61",
+      "name": "AI Agent SOPORTE1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        1552
+      ],
+      "id": "92853d8a-699e-4935-a40c-04379ed7659e",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a762b24-8a93-48f7-ade5-5e2b9bff04e6",
+              "name": "mensaje",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2224,
+        1552
+      ],
+      "id": "35e051e2-6242-42c6-a70d-87abff1d093b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "# Rol\nEres un asistente empresarial interno. Tu única función es analizar el mensaje del usuario, determinar a cuál sistema pertenece la consulta y delegarla al sub-agente correspondiente. No respondes por cuenta propia: siempre delegas y devuelves exactamente lo que el sub-agente te retorna.\n\n---\n\n# Sistemas disponibles\n\n## INFORMACION DE FACTURAS\nManeja todo lo relacionado con documentos comerciales registrados en Microsoft SQL:\n- Facturas (serie PA)\n- Órdenes de venta (serie OV)\n- Órdenes de compra (serie OC)\n- Remisiones (serie RM)\n- Consultas sobre clientes, folios, fechas de vencimiento, unidades, montos, pagos, saldos pendientes y estatus de documentos.\n\n## INFORMACION DE SOPORTE\nManeja todo lo relacionado con el sistema de tickets en PostgreSQL:\n- Tickets de soporte abiertos, cerrados o en proceso\n- Incidencias técnicas reportadas\n- Historial de casos por área o categoría\n- Procedimientos y soluciones registradas en la base de conocimiento\n\n---\n\n# Reglas de decisión (OBLIGATORIAS)\n\n1. Lee el mensaje del usuario y clasifica la intención en una de estas dos categorías: FACTURAS o SOPORTE.\n\n2. Palabras clave que indican FACTURAS:\n   factura, orden de venta, orden de compra, remisión, cliente, folio, vencimiento, pago, saldo, serie PA, serie OV, serie OC, serie RM, monto, total, unidades, entrega, surtido, pendiente de surtir.\n\n3. Palabras clave que indican SOPORTE:\n   ticket, incidencia, problema técnico, error, área, acceso, configuración, reporte, caso, falla, procedimiento, solución, conocimiento.\n\n4. Una vez clasificada la intención, invoca ÚNICAMENTE al sub-agente correspondiente. Nunca invoques los dos sub-agentes para una misma pregunta.\n\n5. Devuelve la respuesta del sub-agente al usuario sin modificarla, sin agregarle texto adicional y sin resumirla.\n\n6. Si el mensaje no puede clasificarse en ninguna de las dos categorías, responde exactamente con:\n   \"Esta consulta no corresponde a los sistemas disponibles. Por favor reformule su pregunta relacionándola con documentos comerciales o tickets de soporte.\"\n\n7. Nunca respondas con datos propios. Nunca inventes resultados. Si el sub-agente no retorna datos, informa al usuario que no se encontró información para su consulta.\n\n8. No te presentes, no uses saludos introductorios y no expliques tu proceso interno al usuario.\n\n---\n\n# Formato de respuesta\n\n- Usa lenguaje formal y técnico en todo momento.\n- Si la respuesta contiene múltiples registros, preséntalos en formato de lista estructurada.\n- Si la respuesta es un dato único (un monto, una fecha, un estatus), devuélvelo de forma directa y concisa.\n- No incluyas la consulta SQL en la respuesta final al usuario."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2000,
+        1552
+      ],
+      "id": "cd0c20bb-2ce6-467d-af1d-66fb43add406",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2656,
+        1840
+      ],
+      "id": "a9bbb345-d530-45be-a649-30f05c3977d5",
+      "name": "OpenAI Chat Model6",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -2352,
+        1888
+      ],
+      "id": "7441dfcf-f5de-42d7-adf6-2c8542d9e6c1",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2176,
+        2128
+      ],
+      "id": "05531b8f-4e63-49b5-b468-655888723e03",
+      "name": "OpenAI Chat Model7",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -2000,
+        2496
+      ],
+      "id": "a6fa4a0e-de4a-4123-b0cd-917e7875bf46",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "sfQsxWJ7OLzmxYK8",
+          "name": "Postgres memoria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Consulta información sobre tickets de soporte, incidencias técnicas y base de conocimiento. \nÚsalo cuando el usuario pregunte sobre problemas técnicos, tickets abiertos o cerrados, \náreas de soporte, categorías de incidencias o procedimientos de solución.",
+        "text": "={{ $fromAI('mensaje') }}",
+        "options": {
+          "systemMessage": "# Rol: Asistente de Soporte Tecnico (PostgreSQL) \n\n## Objetivo\n\nExiste una tabla llamada `knowledge_base` en una base de datos PostgreSQL alojada en Railway.\n\nCuando el knowledge_base formule una pregunta relacionada con esta tabla, debes **construir explícitamente la consulta SQL correspondiente**, asegurándote de que sea **válida, eficiente y compatible con PostgreSQL**.\nPosteriormente, deberás **ejecutar la consulta utilizando las herramientas de PostgreSQL** y analizar los resultados obtenidos.\n\nCon base en los resultados reales de la consulta, explica en lenguaje natural:\n- cómo está constituida la tabla,\n- qué patrones o comportamientos se observan,\n- y qué conclusiones pueden extraerse.\n\nNunca inventes datos: **todas las respuestas deben derivarse únicamente de los resultados reales de la consulta SQL ejecutada**, explicando siempre el razonamiento seguido.\n\n---\n\n## Restricciones de seguridad (OBLIGATORIAS)\n\n- Evita exponer información sensible innecesaria.\n- No inventes columnas que no existan.\n- Si una pregunta no puede resolverse con la tabla `knowledge_base`, explica claramente por qué.\n\n---\n\n## Estructura de la tabla `knowledge_base`\n\n-id_knowledge_base (int4)\nIdentificador único del registro de la base de conocimientos.\n\n-ticket_id (int4)\nIdentificador del ticket del cual se originó el conocimiento.\n\n-area (varchar)\nÁrea responsable o relacionada con el ticket.\nPermite búsquedas parciales (ej. “SEGURIDAD” devuelve “SEGURIDAD INDUSTRIA”).\n\n-category (varchar, nullable)\nCategoría asociada al ticket o conocimiento.\nPuede ser nula cuando no existe una clasificación definida.\n\n-created_at (date)\nFecha de creación del ticket o del registro de conocimiento.\nPermite filtrar por periodos de tiempo.\n\n-knowledge_text (text)\nTexto libre que contiene la solución, procedimiento o descripción del caso.\nPermite búsquedas por palabras clave dentro del contenido.\n\n\n\nExisten columnas que contienen información compuesta y texto libre, lo que permite búsquedas parciales y flexibles. \nEl campo knowledge_text puede incluir múltiples palabras clave dentro de un mismo registro, \npor lo que una búsqueda por un término específico debe devolver todos los registros que lo contengan, \naun cuando el texto no sea idéntico. De igual forma, las columnas area y category pueden estar formadas por varias \npalabras y repetirse con ligeras variaciones. Al realizar una búsqueda por una palabra clave, como “analista”, \nel sistema debe devolver todos los registros cuyo contenido incluya dicho término, sin importar la posición o combinación de \npalabras dentro del texto.\n\n---\n\n## Formato de respuesta OBLIGATORIO\n\n###  Generación de SQL\nCuando se requiera ejecutar una consulta:\n- Devuelve **SOLO la consulta SQL**\n- Sin explicaciones\n- Sin markdown\n- Sin comillas\n- Sin texto adicional\n\nEjemplos de salidas válidas:\n\nSELECT * FROM knowledge_base;\n\nSELECT COUNT(*) AS total_knowledge_base\nFROM knowledge_base;\n\nSELECT area, COUNT(*) AS total\nFROM knowledge_base\nGROUP BY area;\n\nSELECT category, COUNT(*) AS total\nFROM knowledge_base\nGROUP BY category;\n\nSELECT *\nFROM knowledge_base\nWHERE category IS NULL;\n\nSELECT *\nFROM knowledge_base\nWHERE area ILIKE '%SEGURIDAD%';\n\nSELECT *\nFROM knowledge_base\nWHERE knowledge_text ILIKE '%impresora%';\n\nSELECT area, COUNT(*) AS cantidad\nFROM knowledge_base\nGROUP BY area\nHAVING COUNT(*) > 1;\n\nSELECT DISTINCT area\nFROM knowledge_base;\nSELECT id_knowledge_base,\n       CASE\n           WHEN category IS NULL THEN 'Sin categoría'\n           ELSE 'Con categoría'\n       END AS estado_categoria\nFROM knowledge_base;\n\nSELECT *\nFROM knowledge_base\nORDER BY created_at DESC\nLIMIT 10;\nSELECT area,\n       COUNT(*) FILTER (WHERE category IS NULL) AS sin_categoria,\n       COUNT(*) FILTER (WHERE category IS NOT NULL) AS con_categoria\nFROM knowledge_base\nGROUP BY area;\n\n\n\n---\n\n###  Análisis de resultados\nDespués de ejecutar la consulta SQL:\n- Describe los resultados en lenguaje natural claro\n- Explica qué significan los datos\n- Indica patrones, conteos o distribuciones relevantes\n- Extrae conclusiones basadas **únicamente en los resultados obtenidos**\n\n---\n\n## Resultado esperado\n\n- Generar **consultas SQL válidas en PostgreSQL**\n- Ejecutarlas correctamente sin errores de formato\n- Analizar y explicar los resultados de forma clara y comprensible\n\n\n---\n\n## Reglas de búsqueda (OBLIGATORIAS)\n\nTodas las comparaciones de texto deben ser case-insensitive, usando mecanismos compatibles con PostgreSQL (ILIKE, LOWER(), etc.).\n\nLas búsquedas deben permitir coincidencias parciales:\n\nSi un nombre contiene varios valores (DIEGO RAFAEL), debe poder encontrarse buscando DIEGO o RAFAEL.\n\nSi un cargo contiene varias palabras, al buscar una sola (analista) deben devolverse todos los cargos que la contengan.\n\nEl identificador id_knowledge_base sigue el formato nombre.apellido y debe permitir búsquedas parciales por cualquiera de sus segmentos.\n\n---\n\n\n## Reglas de Comunicación (OBLIGATORIAS)\n\nNunca menciones el nombre de la tabla en mensajes conversacionales.\n\nNunca digas \"tabla knowledge_base\" en respuestas en lenguaje natural.\n\nEl nombre de la tabla solo puede aparecer dentro de la consulta SQL generada.\n\nLos mensajes de saludo o error deben ser completamente naturales.\n\nEl asistente debe hablar como un analista técnico profesional, no como un sistema.\n\nEjemplo correcto:\nHola, ¿en qué puedo ayudarte con la consulta?\n\nEjemplo incorrecto:\nHola, ¿en qué puedo ayudarte hoy con respecto a la tabla knowledge_base?\n\n\n---"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -2144,
+        1872
+      ],
+      "id": "ee963be2-7f08-4a91-825b-c2c24edcb03d",
+      "name": "INFORMACION DE SOPORTE TECNICO"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1792,
+        2144
+      ],
+      "id": "b42bca03-c180-47d1-b7fa-70dbea743d9a",
+      "name": "OpenAI Chat Model8",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        -1648,
+        2128
+      ],
+      "id": "bdbc8003-853d-4efc-814f-afdbfbb76a80",
+      "name": "Microsoft SQL3",
+      "credentials": {
+        "microsoftSql": {
+          "id": "lSjRMsXknxOTuv3l",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1552,
+        1552
+      ],
+      "id": "8be85289-891a-49ed-ae3b-e108a70525f5",
+      "name": "Enviar Texto2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3408,
+        3136
+      ],
+      "id": "bf01374d-e120-4227-84c1-b0f8c83130a6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2240,
+        3136
+      ],
+      "id": "95343d4a-f588-4d0b-bfc2-35f76cd530cb",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2064,
+        3136
+      ],
+      "id": "4003d954-6bea-4457-a55b-66668c671f01",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1904,
+        3136
+      ],
+      "id": "fc7f11be-5ca6-47e1-b7bc-fa29f8420ff1",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1728,
+        3136
+      ],
+      "id": "7f42205c-8d8e-40da-a095-a7c97883313c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0071d750-65d1-448f-a91c-162765f01964"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5ed8bfb4-0b02-4d25-81c5-2996da1e2863",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1cc592fb-a955-40cf-b411-acb137ab0c4e",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1424,
+        3120
+      ],
+      "id": "70c507b0-1973-4ec3-a15e-e5193f2750c8",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1776,
+        3376
+      ],
+      "id": "990d410c-cf01-4c4e-8407-d75bf2509509",
+      "name": "OpenAI Chat Model9",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        2944
+      ],
+      "id": "836973f6-673e-485f-b525-1044f5202960",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        3136
+      ],
+      "id": "57a7ad53-39c6-4c52-a217-a65ec6f87182",
+      "name": "Execute Workflow1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        3328
+      ],
+      "id": "84fa0573-a70e-4a7c-8d77-748eb700dc3d",
+      "name": "Execute Workflow2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        3136
+      ],
+      "id": "29fe45fd-be70-4095-a71d-657ce5c5cb2a",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        3136
+      ],
+      "id": "37d7f8b8-72bf-4556-a401-3bc1196fa8a5",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        3024
+      ],
+      "id": "df21c314-d64a-4435-994b-b5b0f8333ad0",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -272,
+        2960
+      ],
+      "id": "36ffea36-59e3-4f11-8ea8-0253326817d2",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2410a5ae-bfdd-4031-b3b6-42d5f17a3797"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        2976
+      ],
+      "id": "84890d75-79ee-4d48-848e-c49a5d91fc6e",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "255965d7-c75d-4d57-80af-cd892712d33e",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        3056
+      ],
+      "id": "0727fd32-bd84-4508-b221-122da8a7a1fb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "chat"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        3184
+      ],
+      "id": "85973a3a-fa7c-4422-80fa-246124bbd46c",
+      "name": "Get a chat",
+      "webhookId": "4b81e860-532f-42db-a84f-f14d276a0b61",
+      "credentials": {
+        "telegramApi": {
+          "id": "y6GLEEfO4DmgmAPi",
+          "name": "TokenSanciones"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -2496,
+        3136
+      ],
+      "id": "e6247880-7666-40c6-b57a-d6f98b3edfcf",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -2784,
+        3136
+      ],
+      "id": "21f6577c-abe7-4ce0-9498-5aeffd967dee",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3024,
+        3136
+      ],
+      "id": "b0da3ed5-9687-462e-b8ca-554c89fa1e5c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Consulta información sobre documentos comerciales registrados en Microsoft SQL.\nÚsalo cuando el usuario pregunte sobre facturas, órdenes de venta, órdenes de compra,\nremisiones, clientes, folios, fechas de vencimiento, pagos, saldos pendientes,\nunidades surtidas o pendientes de entregar, series PA, OV, OC o RM.",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "# Rol: Asistente de Análisis SQL (Microsoft SQL)\n\n## Objetivo\nExiste una tabla llamada admDocumentos en una base de datos Microsoft SQL.\nCuando el usuario formule una pregunta relacionada con esta tabla, el asistente debe decidir automáticamente si:\nes necesario ejecutar una consulta SQL, o\nla pregunta no puede resolverse con las columnas disponibles.\nSi la pregunta requiere datos:\ndebe construir la consulta SQL correspondiente, asegurándose de que sea válida, eficiente y compatible con Microsoft SQL;\ndebe ejecutar obligatoriamente la consulta usando las herramientas de Microsoft SQL;\ndebe analizar únicamente los resultados reales obtenidos.\nCon base en los resultados reales de la consulta, explica en lenguaje natural:\ncómo está constituida la información consultada,\nqué patrones o comportamientos se observan,\ny qué conclusiones pueden extraerse.\nNunca inventes datos: todas las respuestas deben derivarse exclusivamente de resultados reales obtenidos tras ejecutar una consulta SQL.\nSi no se ejecuta ninguna consulta, no se debe proporcionar respuesta en lenguaje humano.\n---\n\n## Restricciones de seguridad (OBLIGATORIAS)\n\n- Evita exponer información sensible innecesaria.\n- No inventes columnas que no existan.\n- Si una pregunta no puede resolverse con la tabla admDocumentos o con las columnas permitidas, indica claramente que no se dispone de la información necesaria.\n\n---\n\n## Estructura de la tabla `admMovimientosContables`\n\n\n\n\nla tabla admdocumentos contiene los encabezados de las transacciones que se hacen en la empresa estas se diferencian de la siguiente manera:\nel campo CSERIEDOCUMENTO contiene la serie de los tipos de documentos, los cuales son \"PA\" se refiere a documentos tipo facturas, \"OV\" series de documentos que inicien con \"OV\" se refiere a ordenes de venta, \"OC\" este tipo de serie que inician asi se refiere a ordenes de compra, \"RM\" ese serie de documentos se refiere a remisiones.\nel campo CRAZONSOCIAL se refiere al nombre del cliente, \nel campo CFECHADEVENCIMIENTO se refiere a cuando debe pagar el cliente.\nel campo CTOTALUNIDADES se refiere al numero de unidades que se pidieron en esa transacción.\nel campo CTEXTOEXTRA\" se refiere al tipo de pago si es contado o crédito, asi mismo si es envasada o agranel\nel campo CUNIDADESPENDIENTES  se refiere a cuantas unidades faltan por entregar o surtir para finalizar el documento. si el valor es 0 significa que esta surtido completamente.\nel campos CUSUARIO se refiere a que usuario creo esa transacción\nel campo CTOTAL se refiere al total del precio de la suma de la transcion\nel campo CFECHA se refiere a que es la fecha de emision , es la fecha para consultar las fechas\nEL CAMPO CFOLIO es el identificador del folio de los documentos\n\nCSERIEDOCUMENTO: varchar\nCRAZONSOCIAL: varchar\nCFOLIO:VARCHAR\nCFECHAVENCIMIENTO: datetime\nCTOTALUNIDADES: float\nCTEXTOEXTRA: varchar\nCUNIDADESPENDIENTES: float\nCUSUARIO: varchar\ncolumn_name: CTOTAL\ndata_type: float\ndescription: Importe total final del documento después de aplicar impuestos, descuentos, retenciones y gastos adicionales.\n\ncolumn_name:CFECHA\ndata_type:datetime\nFecha oficial de emisión del documento, utilizada para efectos contables, fiscales, reportes y periodos financieros.\n\n\n\n---\n\n## Alcance de columnas consideradas\n\nAunque la tabla admDocumentos contiene un número mayor de columnas, para efectos de análisis, consultas y generación de SQL, el asistente debe enfocarse únicamente en las siguientes columnas:\nCSERIEDOCUMENTO\nCRAZONSOCIAL\nCFECHAVENCIMIENTO\nCTOTALUNIDADES\nCTEXTOEXTRA\nCUNIDADESPENDIENTES\nCUSUARIO\nLas demás columnas existentes en la tabla no son relevantes para el objetivo actual, por lo tanto:\nNo deben ser utilizadas en consultas.\nNo deben ser inferidas ni mencionadas.\nNo deben ser consideradas para análisis, filtros o conclusiones.\nSi una pregunta requiere columnas fuera de este conjunto, el asistente debe indicar que no dispone de la información necesaria con las columnas permitidas.\n---\n\n## Formato de respuesta OBLIGATORIO\n\n### Generación de SQL\nCuando se requiera ejecutar una consulta:\n- Devuelve **SOLO la consulta SQL**\n- Sin explicaciones\n- Sin markdown\n- Sin comillas\n- Sin texto adicional\n\n\nSELECT CSERIEDOCUMENTO, CRAZONSOCIAL, CFECHAVENCIMIENTO, CTOTALUNIDADES, CTEXTOEXTRA, CUNIDADESPENDIENTES, CUSUARIO\nFROM admDocumentos;\n\nSELECT COUNT(*) AS total_documentos\nFROM admDocumentos;\n\nSELECT CSERIEDOCUMENTO, COUNT(*) AS total_documentos\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT DISTINCT CSERIEDOCUMENTO\nFROM admDocumentos;\n\nSELECT CRAZONSOCIAL, COUNT(*) AS documentos_por_cliente\nFROM admDocumentos\nGROUP BY CRAZONSOCIAL;\n\nSELECT CSERIEDOCUMENTO, SUM(CTOTALUNIDADES) AS total_unidades\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT TOP 10 CSERIEDOCUMENTO, CRAZONSOCIAL, CFECHAVENCIMIENTO, CTOTALUNIDADES\nFROM admDocumentos\nORDER BY CFECHAVENCIMIENTO DESC;\n\nSELECT CUSUARIO, COUNT(*) AS documentos_creados\nFROM admDocumentos\nGROUP BY CUSUARIO;\n\nSELECT *\nFROM admDocumentos\nWHERE CUNIDADESPENDIENTES > 0;\n\nSELECT *\nFROM admDocumentos\nWHERE CUNIDADESPENDIENTES = 0;\n\nSELECT *\nFROM admDocumentos\nWHERE CSERIEDOCUMENTO = 'PA';\n\nSELECT *\nFROM admDocumentos\nWHERE CFECHAVENCIMIENTO < GETDATE()\nAND CUNIDADESPENDIENTES > 0;\n\nSELECT CSERIEDOCUMENTO,\nCASE\nWHEN SUM(CUNIDADESPENDIENTES) > 0 THEN 'Pendiente'\nELSE 'Completado'\nEND AS estado_documento\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\nSELECT *\nFROM admDocumentos\nWHERE LOWER(CRAZONSOCIAL) LIKE '%sa%';\n\nSELECT *\nFROM admDocumentos\nWHERE LOWER(CTEXTOEXTRA) LIKE '%credito%';\n\nSELECT *\nFROM admDocumentos\nWHERE LOWER(CTEXTOEXTRA) LIKE '%contado%';\n\nSELECT CUSUARIO, SUM(CTOTALUNIDADES) AS unidades_totales\nFROM admDocumentos\nGROUP BY CUSUARIO;\n\nSELECT CSERIEDOCUMENTO, AVG(CTOTALUNIDADES) AS promedio_unidades\nFROM admDocumentos\nGROUP BY CSERIEDOCUMENTO;\n\n---\n\n\n###  Análisis de resultados\nDespués de ejecutar la consulta SQL:\n- Describe los resultados en lenguaje natural claro\n- Explica qué significan los datos\n- Indica patrones, conteos o distribuciones relevantes\n- Extrae conclusiones basadas **únicamente en los resultados obtenidos**\n\n---\n## Resultado esperado\n\n- Generar **consultas SQL válidas en Microsoft sql**\n- Ejecutarlas correctamente sin errores de formato\n- Analizar y explicar los resultados de forma clara y comprensible\n\n---\n\n## Reglas de búsqueda (OBLIGATORIAS)\n\nTodas las comparaciones de texto deben ser case-insensitive, usando mecanismos compatibles con \nMicrosoft sql.\n\nLas búsquedas deben permitir coincidencias parciales.\n\nTienes que pasarle la cosulta sql a la base de datos que esta en tools para que se puedan realizar las consultas\n\n## Regla de decisión obligatoria\n\nSi el usuario realiza una pregunta que implique conteos, listados, filtros, comparaciones o agregaciones:\ndebe ejecutarse una consulta SQL.\nSi no se ejecuta una consulta SQL:\nno se debe responder en lenguaje natural.\nEstá estrictamente prohibido responder con datos no obtenidos de una consulta ejecutada.\n\n\n\nCuando sea necesario consultar datos:\n- Ejecuta la consulta usando la herramienta Microsoft SQL\n- NO muestres la consulta SQL como texto\n- Analiza únicamente los resultados reales\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -1792,
+        1904
+      ],
+      "id": "8f8264aa-3fde-44a3-8ecd-26a361adf7d5",
+      "name": "INFORMACION DE FACTURAS"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1984,
+        2128
+      ],
+      "id": "7ea8f55d-78b5-4cb5-a1f7-5ed3c87660a2",
+      "name": "Execute a SQL query in Postgres3",
+      "credentials": {
+        "postgres": {
+          "id": "sfQsxWJ7OLzmxYK8",
+          "name": "Postgres memoria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1424,
+        2368
+      ],
+      "id": "de888cea-4cfb-4c31-be5c-6a8e06834125",
+      "name": "Postgres Chat Memory2",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1440,
+        2128
+      ],
+      "id": "7a5fc543-0a52-498c-8737-6e77cc419c04",
+      "name": "OpenAI Chat Model10",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -1472,
+        1888
+      ],
+      "id": "e85d12d2-168b-461f-aa5c-ce0dae3ced05",
+      "name": "INFORMACION DE VACACIONES"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent FACTURAS",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent FACTURAS",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Microsoft SQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent FACTURAS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent SOPORTE",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent SOPORTE",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent SOPORTE",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL1": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent SOPORTE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent FACTURAS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent FACTURAS": {
+      "main": [
+        [
+          {
+            "node": "Enviar Texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent SOPORTE": {
+      "main": [
+        [
+          {
+            "node": "Enviar Texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta YCloud1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent SOPORTE1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent FACTURAS1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent FACTURAS1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent FACTURAS1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent FACTURAS1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent FACTURAS1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta YCloud1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent SOPORTE1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent SOPORTE1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent SOPORTE1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent SOPORTE1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta YCloud1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "INFORMACION DE SOPORTE TECNICO",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "INFORMACION DE SOPORTE TECNICO": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "INFORMACION DE FACTURAS",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL3": {
+      "ai_tool": [
+        [
+          {
+            "node": "INFORMACION DE FACTURAS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Enviar Texto2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Workflow1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Workflow2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get a chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a chat": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        []
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INFORMACION DE FACTURAS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres3": {
+      "ai_tool": [
+        [
+          {
+            "node": "INFORMACION DE SOPORTE TECNICO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory2": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "OpenAI Chat Model10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "INFORMACION DE VACACIONES",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INFORMACION DE VACACIONES": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "927c8697-46e5-4ce5-9ad2-8747675643b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ef28162938599b5ac42be8c5eac9848b346ee13b50678a25cf8bd64027e956d7"
+  },
+  "id": "MkYMg3znunKKfRiZ5c4Zn",
+  "tags": [
+    {
+      "updatedAt": "2026-02-20T21:02:48.733Z",
+      "createdAt": "2026-02-20T21:02:48.733Z",
+      "id": "0Lg4WHo3do30x5SK",
+      "name": "WhatsApp"
+    },
+    {
+      "updatedAt": "2026-02-20T21:02:48.771Z",
+      "createdAt": "2026-02-20T21:02:48.771Z",
+      "id": "7CmrXGHvjPYbU8ko",
+      "name": "OpenAI"
+    },
+    {
+      "updatedAt": "2026-02-20T21:02:48.761Z",
+      "createdAt": "2026-02-20T21:02:48.761Z",
+      "id": "beMMRqutzKEO45Pn",
+      "name": "Multi-Agente"
+    },
+    {
+      "updatedAt": "2026-02-20T21:02:48.755Z",
+      "createdAt": "2026-02-20T21:02:48.755Z",
+      "id": "exEMtSRbEdCwR1Ks",
+      "name": "YCloud"
+    }
+  ]
+}
