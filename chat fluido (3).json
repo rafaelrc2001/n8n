@@ -1,0 +1,1039 @@
+{
+  "name": "chat fluido",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## REGISTRO FLUIDO\n**Hacer una conversacion de registro fluido",
+        "height": 1728,
+        "width": 3488,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "b4cf9a4d-29ec-407b-b8b5-c2d4e31228ad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## ROL\nEres un extractor de datos conversacional. Analiza el mensaje y extrae nombre personal y empresa si están presentes.\n\n## REGLAS — NOMBRE PERSONAL\nSÍ es nombre: \"me llamo X\", \"soy X\", \"mi nombre es X\", respuesta directa con nombre propio\nNO es nombre: saludos solos, preguntas, intenciones, solo números\n\n## REGLAS — EMPRESA\nSÍ es empresa: \"soy de X\", \"trabajo en X\", \"pertenezco a X\", razón social, palabras como SA, grupo, comercial, distribuidora, agro\nNO es empresa: mensaje ambiguo, solo saludo, solo pregunta\n\n## MENSAJE\n{{ $('Webhook').item.json.body.whatsappInboundMessage.text.body }}\n\n## RESPUESTA (solo JSON, sin markdown):\n{\n  \"tiene_nombre\": true/false,\n  \"nombre_extraido\": \"Nombre o null\",\n  \"tiene_empresa\": true/false,\n  \"empresa_extraida\": \"Empresa o null\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1168,
+        304
+      ],
+      "id": "16197dad-5ec7-44ad-a0f3-0906a6385990",
+      "name": "Extraer datos usuario nuevo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const texto = $input.first().json.text;\nconst r = JSON.parse(texto);\nreturn [{ json: r }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        304
+      ],
+      "id": "d03688ea-b1d9-43dd-8491-f5ce9b052269",
+      "name": "Parsear datos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aaa00001",
+              "leftValue": "={{ $json.tiene_nombre }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1744,
+        304
+      ],
+      "id": "efd4dd6e-e358-4aa5-ae25-84b578638633",
+      "name": "Tiene nombre?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aaa00002",
+              "leftValue": "={{ $json.tiene_empresa }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2000,
+        208
+      ],
+      "id": "89b6ba77-b6a0-48ec-bb4a-d5b3a0ad987d",
+      "name": "Tiene empresa tambien?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO usuario_perfil(telefono, nombre, empresa)\nVALUES (\n  '{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}',\n  '{{ $('Parsear datos').item.json.nombre_extraido }}',\n  '{{ $('Parsear datos').item.json.empresa_extraida }}'\n)\nON CONFLICT (telefono) DO UPDATE SET nombre = EXCLUDED.nombre, empresa = EXCLUDED.empresa;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2256,
+        96
+      ],
+      "id": "0db2dc59-8df5-41d5-b430-10fd95b7b23a",
+      "name": "Crear perfil completo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO usuario_perfil(telefono, nombre)\nVALUES (\n  '{{ $('Webhook').item.json.body.whatsappInboundMessage.from }}',\n  '{{ $('Parsear datos').item.json.nombre_extraido }}'\n)\nON CONFLICT (telefono) DO UPDATE SET nombre = EXCLUDED.nombre;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2272,
+        304
+      ],
+      "id": "83d3acc3-acb2-4152-88e9-284c421112d3",
+      "name": "Crear perfil solo nombre",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=¡Mucho gusto, {{ $('Parsear datos').item.json.nombre_extraido }}  '! 😊 ¿Y de qué empresa nos visitas?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2656,
+        320
+      ],
+      "id": "379d26b8-1a8d-476d-8976-3c22f5d10907",
+      "name": "Pedir empresa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=¡Hola! 😊 Es un placer.\n¿Podrías decirme tu nombre y la empresa a la que perteneces?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2048,
+        448
+      ],
+      "id": "d91e979d-bdb2-4dbf-9e82-340a4f15a6bc",
+      "name": "Saludo inicial",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bbb00001",
+              "leftValue": "={{ $json.empresa }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            },
+            {
+              "id": "eca3c4f4-a26c-42df-8ee9-8a39289d924e",
+              "leftValue": "={{ $json.empresa }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1488,
+        800
+      ],
+      "id": "3af7821c-9c3a-44ff-86ad-146d608256cf",
+      "name": "Le falta empresa?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrae solo la empresa del mensaje.\nNombre del usuario ya conocido: {{ $('traer el registro1').item.json.nombre }}\n\nMensaje: {{ $('Webhook').item.json.body.whatsappInboundMessage.text.body }}\n\nResponde SOLO JSON sin markdown:\n{\n  \"tiene_empresa\": true/false,\n  \"empresa_extraida\": \"Empresa o null\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1680,
+        560
+      ],
+      "id": "e4514141-0261-4020-a6b9-26e92b0c8d3f",
+      "name": "Extraer empresa usuario existente"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ccc00001",
+              "leftValue": "={{ JSON.parse($json.text).tiene_empresa }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2096,
+        720
+      ],
+      "id": "5a68cc98-2710-464f-883b-a4af37b35e7c",
+      "name": "Empresa detectada?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE usuario_perfil\nSET empresa = '{{ JSON.parse($('Extraer empresa usuario existente').item.json.text).empresa_extraida }}'\nWHERE telefono = '{{ $('Webhook').first().json.body.whatsappInboundMessage.from }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2480,
+        512
+      ],
+      "id": "d4806656-e950-4cbe-b1c6-3f9971dbfedf",
+      "name": "Guardar empresa",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ '¡Gracias, ' + $('traer el registro1').item.json.nombre + '! ¿Con qué te puedo ayudar hoy?' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2784,
+        512
+      ],
+      "id": "d4259879-7d90-41ca-8cb9-5c26625a7d80",
+      "name": "Bienvenida con empresa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ '¡Hola de nuevo, ' + $('traer el registro1').item.json.nombre + '! 😊 ¿De qué empresa nos visitas?' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2496,
+        768
+      ],
+      "id": "35a978b6-8dcd-4e48-a3a0-71a9584d65cd",
+      "name": "Pedir empresa a usuario existente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatfluido",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        448
+      ],
+      "id": "2ba7ca7a-8aaa-425d-afc0-472580fa2463",
+      "name": "Webhook",
+      "webhookId": "7ebffe2b-6031-4630-8874-41812b2a2b5a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT EXISTS (\n  SELECT 1 FROM usuario_perfil \n  WHERE telefono = '{{ $json.body.whatsappInboundMessage.from }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        496,
+        448
+      ],
+      "id": "8d550c27-adf6-426d-99e4-195b0afaf403",
+      "name": "usuarios1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "dc513729-267a-420a-abaf-ea3bb8381ad5",
+              "leftValue": false,
+              "rightValue": "={{ $json.exists }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        784,
+        448
+      ],
+      "id": "63537603-e04a-475c-9ecd-bdd74f4acd74",
+      "name": "Existe el registro1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        608
+      ],
+      "id": "3d4b98da-e468-4659-99ec-7b3b2912a837",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from usuario_perfil where telefono = '{{ $('Webhook').first().json.body.whatsappInboundMessage.from }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1200,
+        800
+      ],
+      "id": "7283c694-fa02-4a61-af6a-9c4d0886a496",
+      "name": "traer el registro1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ 'SELECT TOP 1 CodigoCliente, NombreCliente, SaldoPendiente, PagosPendientes FROM vw_SaldosClientesCompleto WHERE ' + (() => { const empresa = $(\\'traer el registro\\').item.json.empresa ?? \\'\\'; const palabras = empresa.toLowerCase().split(\\' \\').filter(p => ![\\'sa\\',\\'de\\',\\'cv\\',\\'del\\',\\'los\\',\\'las\\',\\'y\\',\\'e\\',\\'s.a\\'].includes(p) && p.length > 2); return palabras.map(p => `LOWER(NombreCliente) LIKE \\'%${p}%\\'`).join(\\' OR \\'); })() + ' ORDER BY SaldoPendiente DESC' }}"
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        1552
+      ],
+      "id": "775515e4-5395-4a49-ae46-0492cfe728f9",
+      "name": "Buscar saldo en SQL",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "lSjRMsXknxOTuv3l",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\n// Si no hay resultados, el cliente no existe en SQL\nif (!rows || rows.length === 0 || !rows[0].json.NombreCliente) {\n  return [{ json: { \n    existe_en_sql: false,\n    tiene_saldo: false,\n    saldo_pendiente: 0,\n    pagos_pendientes: 0,\n    nombre_sql: null,\n    codigo_cliente: null\n  }}];\n}\n\nconst cliente = rows[0].json;\nconst saldo = parseFloat(cliente.SaldoPendiente ?? 0);\n\nreturn [{ json: {\n  existe_en_sql: true,\n  tiene_saldo: saldo > 0,\n  saldo_pendiente: saldo,\n  pagos_pendientes: parseFloat(cliente.PagosPendientes ?? 0),\n  nombre_sql: cliente.NombreCliente,\n  codigo_cliente: cliente.CodigoCliente\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        1264
+      ],
+      "id": "db5d43bb-5d36-4066-aaab-d1c3dc4e9902",
+      "name": "Evaluar saldo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "saldo-001",
+              "leftValue": "={{ $json.tiene_saldo }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2624,
+        1264
+      ],
+      "id": "27f264e5-99a5-4110-aa60-776b79e58e0b",
+      "name": "Tiene saldo pendiente?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=⚠️ Hola {{ $('traer el registro').item.json.nombre }}. Antes de continuar, te informamos que {{ $('traer el registro').item.json.empresa }} tiene un saldo pendiente de *${{ $('Evaluar saldo').item.json.saldo_pendiente.toLocaleString('es-MX') }}*.\n\nPuedes continuar con tu consulta. 👇"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2864,
+        1136
+      ],
+      "id": "796ebc8a-514b-4135-a8f9-9d1dc4c14d1f",
+      "name": "Avisar saldo pendiente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ctx-001",
+              "name": "existe_en_sql",
+              "value": "={{ $('Evaluar saldo').item.json.existe_en_sql }}",
+              "type": "boolean"
+            },
+            {
+              "id": "ctx-002",
+              "name": "tiene_saldo",
+              "value": "={{ $('Evaluar saldo').item.json.tiene_saldo }}",
+              "type": "boolean"
+            },
+            {
+              "id": "ctx-003",
+              "name": "saldo_pendiente",
+              "value": "={{ $('Evaluar saldo').item.json.saldo_pendiente }}",
+              "type": "number"
+            },
+            {
+              "id": "ctx-004",
+              "name": "nombre_sql",
+              "value": "={{ $('Evaluar saldo').item.json.nombre_sql }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-005",
+              "name": "codigo_cliente",
+              "value": "={{ $('Evaluar saldo').item.json.codigo_cliente }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-006",
+              "name": "nombre_perfil",
+              "value": "={{ $('traer el registro').item.json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-007",
+              "name": "empresa_perfil",
+              "value": "={{ $('traer el registro').item.json.empresa }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-008",
+              "name": "telefono",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3120,
+        1280
+      ],
+      "id": "c885219c-7122-4455-8780-140e9eab5233",
+      "name": "Contexto para siguiente fase",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extraer datos usuario nuevo": {
+      "main": [
+        [
+          {
+            "node": "Parsear datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear datos": {
+      "main": [
+        [
+          {
+            "node": "Tiene nombre?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene nombre?": {
+      "main": [
+        [
+          {
+            "node": "Tiene empresa tambien?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Saludo inicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene empresa tambien?": {
+      "main": [
+        [
+          {
+            "node": "Crear perfil completo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear perfil solo nombre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear perfil solo nombre": {
+      "main": [
+        [
+          {
+            "node": "Pedir empresa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Le falta empresa?": {
+      "main": [
+        [
+          {
+            "node": "Extraer empresa usuario existente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluar saldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer empresa usuario existente": {
+      "main": [
+        [
+          {
+            "node": "Empresa detectada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Empresa detectada?": {
+      "main": [
+        [
+          {
+            "node": "Guardar empresa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pedir empresa a usuario existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar empresa": {
+      "main": [
+        [
+          {
+            "node": "Bienvenida con empresa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "usuarios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "usuarios1": {
+      "main": [
+        [
+          {
+            "node": "Existe el registro1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existe el registro1": {
+      "main": [
+        [
+          {
+            "node": "Extraer datos usuario nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "traer el registro1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extraer datos usuario nuevo",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Extraer empresa usuario existente",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "traer el registro1": {
+      "main": [
+        [
+          {
+            "node": "Le falta empresa?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar saldo": {
+      "main": [
+        [
+          {
+            "node": "Tiene saldo pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene saldo pendiente?": {
+      "main": [
+        [
+          {
+            "node": "Avisar saldo pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contexto para siguiente fase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar saldo pendiente": {
+      "main": [
+        [
+          {
+            "node": "Contexto para siguiente fase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "95a8f85a-74d0-467f-9b7c-24de5de3587d",
+  "meta": {
+    "instanceId": "ef28162938599b5ac42be8c5eac9848b346ee13b50678a25cf8bd64027e956d7"
+  },
+  "id": "I4MpDU2moQl3bnAn3TyXp",
+  "tags": []
+}

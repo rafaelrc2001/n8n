@@ -1,0 +1,3532 @@
+{
+  "name": "Proagro WhatsApp - Flujo Completo Mejorado",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "espejo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1728,
+        1072
+      ],
+      "id": "52875986-839c-4908-bf8d-2988b4bd7390",
+      "name": "Webhook1",
+      "webhookId": "df6e8b5e-3e88-4434-a933-b7612e9a1eae"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT EXISTS (\n  SELECT 1 FROM usuario_perfil \n  WHERE telefono = '{{ $json.body.whatsappInboundMessage.from }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1456,
+        1072
+      ],
+      "id": "7b077603-d904-4b39-b8cd-2f5dc3ac8f0c",
+      "name": "usuarios",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ex-001",
+              "leftValue": false,
+              "rightValue": "={{ $json.exists }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1200,
+        1072
+      ],
+      "id": "7889db38-adc4-4ad2-831b-445e978a0388",
+      "name": "Existe el registro"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        688
+      ],
+      "id": "a736e189-dd3b-4d0f-9d98-67524dbb1283",
+      "name": "OpenAI nuevo usuario",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## ROL\nEres un extractor de datos conversacional. Analiza el mensaje y extrae nombre personal y empresa si están presentes.\n\n## REGLAS — NOMBRE PERSONAL\nSÍ es nombre: \"me llamo X\", \"soy X\", \"mi nombre es X\", respuesta directa con nombre propio\nNO es nombre: saludos solos, preguntas, intenciones, solo números\n\n## REGLAS — EMPRESA\nSÍ es empresa: \"soy de X\", \"trabajo en X\", \"pertenezco a X\", razón social, palabras como SA, grupo, comercial, distribuidora, agro\nNO es empresa: mensaje ambiguo, solo saludo, solo pregunta\n\n## MENSAJE\n{{ $('Webhook1').item.json.body.whatsappInboundMessage.text.body }}\n\n## RESPUESTA (solo JSON, sin markdown):\n{\n  \"tiene_nombre\": true/false,\n  \"nombre_extraido\": \"Nombre o null\",\n  \"tiene_empresa\": true/false,\n  \"empresa_extraida\": \"Empresa o null\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -496,
+        432
+      ],
+      "id": "0ae25680-159a-452b-929e-09d804966e2e",
+      "name": "Extraer datos usuario nuevo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const texto = $input.first().json.text;\ntry {\n  const r = JSON.parse(texto.replace(/```json|```/g,'').trim());\n  return [{ json: r }];\n} catch(e) {\n  return [{ json: { tiene_nombre: false, nombre_extraido: null, tiene_empresa: false, empresa_extraida: null } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        416
+      ],
+      "id": "0c8885f0-0a1d-4996-bf9b-48133b2e2bf4",
+      "name": "Parsear datos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "tn-001",
+              "leftValue": "={{ $json.tiene_nombre }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        416
+      ],
+      "id": "16a518e6-5c77-4ffe-9958-92a56550e76f",
+      "name": "Tiene nombre?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "te-001",
+              "leftValue": "={{ $json.tiene_empresa }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        400
+      ],
+      "id": "dc2b66bc-135a-4bb6-aafd-34bc3cfffc28",
+      "name": "Tiene empresa tambien?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO usuario_perfil(telefono, nombre, empresa)\nVALUES (\n  '{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}',\n  '{{ $('Parsear datos').item.json.nombre_extraido }}',\n  '{{ $('Parsear datos').item.json.empresa_extraida }}'\n)\nON CONFLICT (telefono) DO UPDATE SET nombre = EXCLUDED.nombre, empresa = EXCLUDED.empresa;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        304
+      ],
+      "id": "21b4aeae-5078-46b4-993e-170af671397a",
+      "name": "Crear perfil completo",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO usuario_perfil(telefono, nombre)\nVALUES (\n  '{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}',\n  '{{ $('Parsear datos').item.json.nombre_extraido }}'\n)\nON CONFLICT (telefono) DO UPDATE SET nombre = EXCLUDED.nombre;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        992,
+        528
+      ],
+      "id": "e4a57c1c-5253-4fee-9917-49fafd152a9c",
+      "name": "Crear perfil solo nombre",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=¡Mucho gusto, {{ $('Parsear datos').item.json.nombre_extraido }}! 😊 ¿Y de qué empresa nos visitas?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1280,
+        528
+      ],
+      "id": "1b522763-4d9e-465c-9531-d258cebf5284",
+      "name": "Pedir empresa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappMessage.from }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappMessage.to }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=¡Hola! 😊 Es un placer.\n¿Podrías decirme tu nombre y la empresa a la que perteneces?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        656,
+        640
+      ],
+      "id": "09624366-ea66-42f3-9d64-7d1a338b3269",
+      "name": "Saludo inicial",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from usuario_perfil where telefono = '{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -768,
+        1360
+      ],
+      "id": "17748a8f-5991-42f5-9c0b-e970baef930e",
+      "name": "traer el registro",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "le-001",
+              "leftValue": "={{ $json.empresa }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -576,
+        1360
+      ],
+      "id": "0da0ae8d-4234-43c5-ac82-1563ced5609d",
+      "name": "Le falta empresa?"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        2208
+      ],
+      "id": "9b5f4bed-539a-4619-8dd7-25aadf1c4513",
+      "name": "OpenAI empresa existente",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrae solo la empresa del mensaje.\nNombre del usuario ya conocido: {{ $('traer el registro').item.json.nombre }}\n\nMensaje: {{ $('Webhook1').item.json.body.whatsappInboundMessage.text.body }}\n\nResponde SOLO JSON sin markdown:\n{\n  \"tiene_empresa\": true/false,\n  \"empresa_extraida\": \"Empresa o null\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        48,
+        960
+      ],
+      "id": "8c38d0a6-5d3e-4ed3-8951-2ad89da54bad",
+      "name": "Extraer empresa usuario existente"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ed-001",
+              "leftValue": "={{ JSON.parse($json.text).tiene_empresa }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        960
+      ],
+      "id": "94349d95-7068-4ac8-9cff-b630476eb57e",
+      "name": "Empresa detectada?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE usuario_perfil\nSET empresa = '{{ JSON.parse($('Extraer empresa usuario existente').item.json.text).empresa_extraida }}'\nWHERE telefono = '{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        832,
+        944
+      ],
+      "id": "dc5cb951-b7a3-4aaf-a4f6-8729bb9b337c",
+      "name": "Guardar empresa",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ '¡Gracias, ' + $('traer el registro').item.json.nombre + '! Ahora sí, ¿en qué te puedo ayudar?' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1344,
+        944
+      ],
+      "id": "9f5c1f66-0ec9-4e5c-8f2b-6902d678507d",
+      "name": "Bienvenida con empresa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ '¡Hola de nuevo, ' + $('traer el registro').item.json.nombre + '! 😊 ¿De qué empresa nos visitas?' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        848,
+        1216
+      ],
+      "id": "59cd18da-03fb-4cab-96fd-b8d9e613b1df",
+      "name": "Pedir empresa a usuario existente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from vw_SaldosClientes where NombreCliente = '{{ $('traer el registro').item.json.empresa }}'"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        1728
+      ],
+      "id": "aecd49be-30e9-4f1d-ac1d-ac95ea94c381",
+      "name": "Buscar saldo en SQL",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "lSjRMsXknxOTuv3l",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nif (!rows || rows.length === 0 || !rows[0].json.NombreCliente) {\n  return [{ json: { existe_en_sql: false, tiene_saldo: false, saldo_pendiente: 0, pagos_pendientes: 0, nombre_sql: null, codigo_cliente: null } }];\n}\nconst cliente = rows[0].json;\nconst saldo = parseFloat(cliente.SaldoPendiente ?? 0);\nreturn [{ json: { existe_en_sql: true, tiene_saldo: saldo > 0, saldo_pendiente: saldo, pagos_pendientes: parseFloat(cliente.PagosPendientes ?? 0), nombre_sql: cliente.NombreCliente, codigo_cliente: cliente.CodigoCliente } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1728
+      ],
+      "id": "4ac1500c-9114-41f6-a5d8-37a29baac3b0",
+      "name": "Evaluar saldo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "sp-001",
+              "leftValue": "={{ $json.tiene_saldo }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        1728
+      ],
+      "id": "d6ed392f-0e1d-486c-9a05-a62ffd7532bd",
+      "name": "Tiene saldo pendiente?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=⚠️ Hola {{ $('traer el registro').item.json.nombre }}. Antes de continuar, te informamos que *{{ $('traer el registro').item.json.empresa }}* tiene un saldo pendiente de *${{ $('Evaluar saldo').item.json.saldo_pendiente.toLocaleString('es-MX') }}*.\n\nPuedes continuar con tu consulta. 👇"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        848,
+        1440
+      ],
+      "id": "4416acc8-625d-4dc7-aa2b-4a36f15902c6",
+      "name": "Avisar saldo pendiente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from historial_conversaciones where telefono = '{{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}'\nORDER BY actualizado_en DESC\nLIMIT 10;",
+        "options": {
+          "replaceEmptyStrings": false
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1056,
+        1744
+      ],
+      "id": "88e51e85-2783-4e5a-902b-e69330b7ade9",
+      "name": "Activar la memoria",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "pregunta",
+              "renameField": true,
+              "outputFieldName": "humano"
+            },
+            {
+              "fieldToAggregate": "respuesta",
+              "renameField": true,
+              "outputFieldName": "AI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        1744
+      ],
+      "id": "df8087a2-8ec1-4f67-8f4e-3c76ee29c1e4",
+      "name": "Ultimos 10 mensajes maquina"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) AS total_pedidos\nFROM pedidos p\nWHERE p.telefono = '{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}'\nAND p.estado = 'pendiente_fecha';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1520,
+        1744
+      ],
+      "id": "cc8632a4-6601-4811-b167-ea4a2e4e6671",
+      "name": "Fecha Pedido pendiente?",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2032,
+        2128
+      ],
+      "id": "3aa06f85-1aee-483e-a930-f2ae92a782eb",
+      "name": "OpenAI clasificador",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## ROL\nEres un analizador de contexto conversacional. Determina en qué estado se encuentra el pedido del usuario.\n\n## ESTADOS POSIBLES\n- SIN_PEDIDO → No hay pedido en curso\n- ESPERANDO_FECHA → Pedido en curso, IA espera fecha de entrega\n- PEDIDO_COMPLETADO → Pedido confirmado. PRIORIDAD ABSOLUTA si detectas \"✅ ¡Entrega confirmada!\" o \"Datos del pedido\" con id\n- FECHA_RECIBIDA → Usuario dio fecha pero aún no confirmada\n\n## PRIORIDAD (evalúa en orden)\n1. Historial IA contiene \"✅ ¡Entrega confirmada!\" → PEDIDO_COMPLETADO\n2. Historial IA contiene \"Datos del pedido\" e \"id del pedido\" → PEDIDO_COMPLETADO\n3. Historial IA contiene \"¿Qué fecha y hora te queda bien?\" Y no hay confirmación → ESPERANDO_FECHA\n4. Sin pedido en curso → SIN_PEDIDO\n\n## HISTORIAL\nMensajes humano: {{ $('Ultimos 10 mensajes maquina').item.json.humano }}\nMensajes IA: {{ $('Ultimos 10 mensajes maquina').item.json.AI }}\n\n## RESPUESTA: solo el valor exacto sin puntuación",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "prueba"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1792,
+        1744
+      ],
+      "id": "eeeb5c89-6a9f-4fbe-97c4-496325ef0648",
+      "name": "es un pedido pendiente?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Clasifica el mensaje en UNA categoría. Responde SOLO la palabra exacta.\n\n## CATEGORÍAS\n- catalogo → precio, existencia, disponibilidad productos agrícolas\n- clientes → datos cliente: nombre, RFC, ciudad, estado\n- facturas → facturas, OV, OC, RM, documentos pendientes, vencidos\n- pedido → intención de compra explícita:\n- pedido → el usuario quiere comprar o solicitar un producto.\n  Ejemplos exactos que SIEMPRE son pedido:\n  \"quiero X unidades de Y\"\n  \"necesito X kilos de Y\" \n  \"quiero hacer un pedido de Y\"\n  \"pídeme X de Y\"\n  \"quiero pedir urea\"\n  \"10 unidades de urea granulada\"\n  \"necesito 10 de urea\"\n  REGLA: si el mensaje contiene una cantidad (número) + un producto agrícola → SIEMPRE es pedido\n  REGLA: si el mensaje dice \"quiero pedir\" o \"hacer un pedido\" aunque no tenga cantidad → SIEMPRE es pedido\n\n- esperando_fecha → SOLO si estado_pedido=ESPERANDO_FECHA Y total_pedidos>0\n- pedido_completado → SOLO si estado_pedido=PEDIDO_COMPLETADO Y sin intención nueva\n- saludo → todo lo demás\n\n## PRIORIDAD (evalúa en orden, la primera que aplique gana)\n1. estado_pedido=ESPERANDO_FECHA Y total_pedidos>0 → esperando_fecha\n2. mensaje contiene número + producto agrícola → pedido\n3. mensaje contiene \"pedir\", \"pedido\", \"ordenar\", \"comprar\" → pedido\n4. pregunta productos/precios/existencia → catalogo\n5. pregunta clientes → clientes\n6. pregunta facturas/documentos → facturas\n7. estado_pedido=PEDIDO_COMPLETADO Y mensaje sin intención clara → pedido_completado\n8. cualquier otro → saludo\n\n## DATOS\nMensaje: {{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}\nEstado pedido: {{ $('es un pedido pendiente?').first().json.text }}\nTotal pendientes: {{ $('Fecha Pedido pendiente?').first().json.total_pedidos }}\n\n## CONTEXTO CONFIRMADO (fuente de verdad - NO contradecir)\nNombre: {{ $('traer el registro').first().json.nombre }}\nEmpresa: {{ $('traer el registro').first().json.empresa }}\nÚltimo contexto: {{ $('traer el registro').first().json.ultimo_contexto }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2224,
+        1744
+      ],
+      "id": "30b765d9-29eb-4560-a1f7-32da2086b8f1",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ctx-001",
+              "name": "telefono",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-002",
+              "name": "nombre",
+              "value": "={{ $('traer el registro').first().json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-003",
+              "name": "empresa",
+              "value": "={{ $('traer el registro').first().json.empresa }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-004",
+              "name": "ultimo_contexto",
+              "value": "={{ $('traer el registro').first().json.ultimo_contexto }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-005",
+              "name": "tiene_saldo",
+              "value": "={{ $('Evaluar saldo').first().json.tiene_saldo }}",
+              "type": "boolean"
+            },
+            {
+              "id": "ctx-006",
+              "name": "saldo_pendiente",
+              "value": "={{ $('Evaluar saldo').first().json.saldo_pendiente }}",
+              "type": "number"
+            },
+            {
+              "id": "ctx-007",
+              "name": "nombre_sql",
+              "value": "={{ $('Evaluar saldo').first().json.nombre_sql }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-008",
+              "name": "categoria",
+              "value": "={{ $('Basic LLM Chain').first().json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-009",
+              "name": "mensaje_actual",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2656,
+        1744
+      ],
+      "id": "65ab67b9-b00e-4df2-9a91-d4e086fc757c",
+      "name": "Contexto para siguiente fase"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "catalogo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "sw-001"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "sw-002",
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "clientes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "sw-003",
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "facturas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "sw-004",
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "saludo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "sw-005",
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "pedido",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "sw-006",
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "esperando_fecha",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "sw-007",
+                    "leftValue": "={{ $json.categoria }}",
+                    "rightValue": "pedido_completado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2944,
+        1728
+      ],
+      "id": "c58f7748-9d5d-49db-b703-fa3c634f67b6",
+      "name": "Elejir el camino"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3952,
+        1008
+      ],
+      "id": "dcafa1c7-381e-48d0-b7cf-4f8ae5e371c4",
+      "name": "OpenAI agente consultas",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}\n\nContexto del usuario:\nNombre: {{ $('Contexto para siguiente fase').first().json.nombre }}\nEmpresa: {{ $('Contexto para siguiente fase').first().json.empresa }}\nÚltimo contexto: {{ $('Contexto para siguiente fase').first().json.ultimo_contexto }}",
+        "options": {
+          "systemMessage": "=Eres un asistente empresarial inteligente especializado en consultas de una empresa distribuidora agrícola.\n\nTienes acceso a tres fuentes de información:\n1. Catálogo de productos → precios, existencias, datos de productos agrícolas\n2. Base de datos de clientes → RFC, ciudad, estado\n3. Base de datos de pedidos → son los pedidos que tiene el cliente\n\n## REGLAS OBLIGATORIAS\n- SIEMPRE usa la herramienta correspondiente antes de responder\n- NUNCA inventes datos\n- Si no encuentras la info, dilo claramente\n- No menciones herramientas ni procesos internos\n- Responde en español, tono amigable y profesional\n- Respuestas cortas, estás en WhatsApp\n- No prometas acciones futuras ni digas que vas a buscar algo\n- Responde directamente con los datos"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        4320,
+        128
+      ],
+      "id": "83ad0546-769d-48dd-8ee7-ff44f69a1a1c",
+      "name": "AI Agent consultas"
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}",
+        "options": {
+          "systemMessage": "=Eres un asistente especializado en consulta de catálogo de productos agrícolas.\n\nColumnas disponibles: id_producto, Nombre, Precio_menudeo, Precio_mayoreo, unidad, existencia\n\nReglas:\n1. SIEMPRE consulta el catálogo antes de responder\n2. No inventes productos ni precios\n3. Si el producto no existe: PRODUCTO_NO_ENCONTRADO\n\nFormato respuesta:\n🌱 Nombre: {Nombre}\n🆔 ID: {id_producto}\n💰 Menudeo: {Precio_menudeo}\n💰 Mayoreo: {Precio_mayoreo}\n📦 Unidad: {unidad}\n✅ Existencia: {existencia}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        4000,
+        576
+      ],
+      "id": "91479566-ede8-4b2a-a2aa-805c19d2d895",
+      "name": "Información Catalogo"
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}",
+        "options": {
+          "systemMessage": "Eres un asistente especializado en consulta de clientes.\n\nColumnas: Id_cliente, nombre, rfc, ciudad, estado\n\nReglas:\n1. SIEMPRE consulta el Excel antes de responder\n2. No inventes clientes ni datos\n3. Si no existe: CLIENTE_NO_ENCONTRADO\n\nFormato:\nCliente: {nombre}\nID: {Id_cliente}\nRFC: {rfc}\nCiudad: {ciudad}\nEstado: {estado}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        4352,
+        560
+      ],
+      "id": "d54a20ce-6342-4a5f-9c8a-ec5fdf753f9b",
+      "name": "Información de clientes"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consulta el catálogo completo de productos agrícolas. Úsala SIEMPRE antes de responder sobre productos, precios o existencias.",
+        "documentId": {
+          "__rl": true,
+          "value": "17Fg3A2ZiLXnMIgCjOelRVCsnCUJcZ_wNLJQKcK09k90",
+          "mode": "list",
+          "cachedResultName": "N8N_COMPRAS"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1098451404,
+          "mode": "list",
+          "cachedResultName": "Catalogo"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        4144,
+        1024
+      ],
+      "id": "7d4b1c57-587e-4625-88ef-4d6e3d924422",
+      "name": "catalogo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aT80Lo5GcEpyzePc",
+          "name": "conexion con sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17Fg3A2ZiLXnMIgCjOelRVCsnCUJcZ_wNLJQKcK09k90",
+          "mode": "list",
+          "cachedResultName": "N8N_COMPRAS"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Clientes"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        4496,
+        1008
+      ],
+      "id": "3ec0720e-dedb-4577-995a-d4f7b5c154d2",
+      "name": "Clientes1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aT80Lo5GcEpyzePc",
+          "name": "conexion con sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from.trim() }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5184,
+        112
+      ],
+      "id": "a468e2e8-cd24-4002-9ec5-6a0358e035ee",
+      "name": "Enviar respuesta consulta",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\n{{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}\n{{ $('Contexto para siguiente fase').first().json.nombre }},{{ $('Contexto para siguiente fase').first().json.empresa }},{{ $('Contexto para siguiente fase').first().json.ultimo_contexto }}",
+        "options": {
+          "systemMessage": "=Eres un asistente empresarial por WhatsApp.\n\n## CASO 1 — Saludo\n- Si conoces el nombre: salúdalo por su nombre\n- Si hay consulta frecuente en historial: menciónala y pregunta si quiere repetirla\n- Si no hay historial: saluda y pregunta en qué puedes ayudar\n\n## CASO 2 — Consulta directa\n- Usa las herramientas necesarias y responde con datos reales\n\n## REGLAS\n- No menciones herramientas ni base de datos\n- No digas que vas a buscar, procesar o revisar\n- Responde directamente\n- Tono amigable, respuestas cortas\n- Solo español"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        4080,
+        1712
+      ],
+      "id": "4a63ea1b-1f90-49f0-8d63-8107722a1714",
+      "name": "Respuestas sin consulta"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from.trim() }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4800,
+        1680
+      ],
+      "id": "c871b89b-6e84-454c-abef-9ca49da6062a",
+      "name": "Enviar saludo",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=telefono:\n{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}\n\nnombre:\n{{ $('Contexto para siguiente fase').first().json.nombre }}\n\nnombre de la empresa:\n{{ $('Contexto para siguiente fase').first().json.empresa }}\n\n{{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Extrae del mensaje: telefono, empresa, producto, cantidad.\n\nReglas:\n1. No generes SQL\n2. No calcules totales\n3. No inventes datos\n4. Si falta algún dato: null\n5. Solo JSON válido\n\n{\n  \"telefono\": \"string | null\",\n  \"empresa\": \"string | null\",\n  \"producto\": \"string | null\",\n  \"cantidad\": number | null\n}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3360,
+        2304
+      ],
+      "id": "e7c4f639-b097-4450-9816-aab64b601d2c",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4128,
+        2736
+      ],
+      "id": "92f68749-6ead-4d21-9bc9-279dc1097768",
+      "name": "OpenAI pedidos",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "if3-001",
+              "leftValue": "={{ JSON.parse($json.text).producto }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7722428f-58ba-4bc0-9f5a-6d1be48e5118",
+              "leftValue": "={{ JSON.parse($json.text).producto }}   ",
+              "rightValue": "null",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3680,
+        2304
+      ],
+      "id": "38b4107d-ffaf-408e-a09e-daaec20d73e6",
+      "name": "If3 producto vacio?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=mensajes del humano\n{{ $('Ultimos 10 mensajes maquina').first().json.humano }}\n\nmensajes de la ia\n{{ $('Ultimos 10 mensajes maquina').first().json.AI }}",
+        "options": {
+          "systemMessage": "=## ROL\nEres un extractor de producto conversacional. Identifica sobre qué producto habla el usuario basándote en el historial.\n\nEl historial está ordenado de más reciente a más antiguo.\nBusca el producto más reciente mencionado.\n\nFormato de respuesta OBLIGATORIO (solo JSON):\n\nSi encontraste producto:\n{\n  \"encontrado\": true,\n  \"producto\": \"Nombre exacto del producto\"\n}\n\nSi no encontraste:\n{\n  \"encontrado\": false,\n  \"producto\": null\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3872,
+        2128
+      ],
+      "id": "b0567ca1-f38e-4343-ad89-d855e9a3226b",
+      "name": "AI Agent2 buscar producto historial"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=telefono:\n{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}\n\nnombre:\n{{ $('Contexto para siguiente fase').first().json.nombre }}\n\nnombre de la empresa:\n{{ $('Contexto para siguiente fase').first().json.empresa }}\n\n{{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}\n\nproducto encontrado en historial:\n{{ $json.output }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Extrae del mensaje: telefono, empresa, producto, cantidad.\n\nUsa el producto encontrado en historial si el mensaje no lo menciona explícitamente.\n\nReglas: solo JSON válido, sin texto adicional.\n\n{\n  \"telefono\": \"string | null\",\n  \"empresa\": \"string | null\",\n  \"producto\": \"string | null\",\n  \"cantidad\": number | null\n}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        4240,
+        2128
+      ],
+      "id": "bf209038-8f96-4a20-9829-f5823c23f212",
+      "name": "Basic LLM Chain3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const nodo1 = $input.all()[0]?.json?.text ?? null;\nconst nodo2 = $input.all()[1]?.json?.text ?? null;\nconst respuesta = nodo1 || nodo2 || \"\";\nreturn [{ json: { respuesta } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4192,
+        2336
+      ],
+      "id": "b549c725-1c25-4d1d-8eda-cf2c869846c9",
+      "name": "Code in JavaScript4 merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.respuesta }}\n",
+        "options": {
+          "systemMessage": "=## ROL\nEres un motor de búsqueda de productos agrícolas para WhatsApp.\n\n## FUENTE: Google Sheets catálogo\nColumnas: id_producto, Nombre, Precio_menudeo, Precio_mayoreo, unidad, existencia\n\n## TAREA\n1. Recibe el nombre del producto\n2. Ejecuta OBLIGATORIAMENTE la herramienta del catálogo\n3. Busca coincidencia parcial o aproximada\n\n## RESPUESTA según caso:\n\nUN producto exacto:\nPRODUCTO:\n🌱 Nombre: {Nombre}\n🆔 ID: {id_producto}\n💰 Menudeo: {Precio_menudeo}\n💰 Mayoreo: {Precio_mayoreo}\n📦 Unidad: {unidad}\n✅ Existencia: {existencia}\n\nVARIOS productos:\nEncontré varios, ¿cuál necesitas? 🌱\n1️⃣ {id_producto} - {Nombre}\n2️⃣ {id_producto} - {Nombre}\nResponde con el número o nombre exacto.\n\nNinguno:\n❌ No encontré ese producto. ¿Puedes describirlo de otra forma?\n\n## SELECCIÓN INTELIGENTE\nSi buscado tiene 2+ palabras y UN producto contiene TODAS → selecciónalo como exacto.\nSolo muestra lista cuando hay empate real.\n\n## NUNCA inventes IDs ni precios\nProducto a buscar: {{ JSON.parse($('Basic LLM Chain2').first().json.text).producto }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        4720,
+        2320
+      ],
+      "id": "17ed59fe-edf9-4508-bb86-52fe75905aeb",
+      "name": "buscador de producto"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Resultado de búsqueda:\n{{ $('buscador de producto').first().json.output }}\n\nProducto buscado:\n{{ JSON.parse($('Code in JavaScript4 merge').item.json.respuesta).producto }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=## ROL\nEres un validador de búsqueda de productos.\n\n## REGLAS\n- SI → encontró EXACTAMENTE UN producto\n- NO → no encontró ninguno O encontró MÚLTIPLES y el usuario no ha especificado cuál quiere\n\nResponde ÚNICAMENTE: SI o NO\nSin explicaciones, sin puntuación, sin texto adicional."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5120,
+        2320
+      ],
+      "id": "36920854-cdd4-4b2e-928f-61f6b95af62d",
+      "name": "Analizador de respuestas"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "sep-001",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "SI",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5488,
+        2304
+      ],
+      "id": "301f6c82-4eb5-4076-bca8-21b8f13bd211",
+      "name": "Se encontro el producto"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from.trim() }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=\n{{ $('buscador de producto').first().json.output }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5728,
+        2496
+      ],
+      "id": "51df8854-70d8-4827-b890-afe7cebada41",
+      "name": "Enviar Texto6 opciones",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17Fg3A2ZiLXnMIgCjOelRVCsnCUJcZ_wNLJQKcK09k90",
+          "mode": "list",
+          "cachedResultName": "N8N_COMPRAS"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1098451404,
+          "mode": "list",
+          "cachedResultName": "Catalogo"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_producto",
+              "lookupValue": "={{ $('buscador de producto').first().json.output.match(/ID:\\s*(\\w+)/)[1] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5712,
+        2112
+      ],
+      "id": "e8f95d9d-c4d9-4fbb-8163-649ccd256e50",
+      "name": "leer_stock_real",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aT80Lo5GcEpyzePc",
+          "name": "conexion con sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ar-001",
+              "leftValue": "={{ $('leer_stock_real').first().json.existencia }}",
+              "rightValue": "={{ JSON.parse($('Basic LLM Chain2').first().json.text).cantidad }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5952,
+        2112
+      ],
+      "id": "a9b0c981-5392-484b-8bb5-8e0dcd2ed67d",
+      "name": "Stock suficiente?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pedidos (telefono, empresa, id_producto, nombre_producto, cantidad, precio, total)\nVALUES (\n    '{{ JSON.parse($('Basic LLM Chain2').first().json.text).telefono }}',\n    '{{ JSON.parse($('Basic LLM Chain2').first().json.text).empresa }}',\n    '{{ $('buscador de producto').first().json.output.match(/ID:\\s*(\\w+)/)[1] }}',\n    '{{ $('buscador de producto').first().json.output.match(/Nombre:\\s*(.+)/)[1].trim() }}',\n    {{ JSON.parse($('Basic LLM Chain2').first().json.text).cantidad }},\n    '{{ $('buscador de producto').first().json.output.match(/Menudeo:\\s*(\\$[0-9,.]+)/)[1] }}',\n    {{ JSON.parse($('Basic LLM Chain2').first().json.text).cantidad * parseFloat($('buscador de producto').first().json.output.match(/Menudeo:\\s*\\$([0-9,.]+)/)[1].replace(',','')) }}\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6208,
+        1984
+      ],
+      "id": "325dc5d4-1901-4679-83fb-ba703ccf069f",
+      "name": "Execute a SQL query insertar pedido",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from.trim() }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=✅ *¡Pedido registrado exitosamente!*\n\nNombre: {{ $('Contexto para siguiente fase').first().json.nombre }}\nEmpresa: {{ JSON.parse($('Basic LLM Chain2').first().json.text).empresa }}\nID Producto: {{ $('buscador de producto').first().json.output.match(/ID:\\s*(\\w+)/)[1] }}\nProducto: {{ $('buscador de producto').first().json.output.match(/Nombre:\\s*(.+)/)[1].trim() }}\nCantidad: {{ JSON.parse($('Basic LLM Chain2').first().json.text).cantidad }}\nPrecio unitario: {{ $('buscador de producto').first().json.output.match(/Menudeo:\\s*(\\$[0-9,.]+)/)[1] }}\n\n_¿Podrías proporcionarnos una fecha de entrega?_ 🚚"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6464,
+        1984
+      ],
+      "id": "6496e1bb-16b2-402d-a133-99cbaf00a924",
+      "name": "Enviar Texto4 pedido ok",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from.trim() }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=🚨 No pudimos procesar tu pedido.\n\nMotivo: stock insuficiente o producto no disponible.\n\nExistencia actual: {{ $('leer_stock_real').first().json.existencia }}\nCantidad solicitada: {{ JSON.parse($('Basic LLM Chain2').first().json.text).cantidad }}\n\nPor favor verifica la cantidad o contáctanos para más información."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6304,
+        2480
+      ],
+      "id": "790621e7-63bd-4feb-a6a3-68457dd73d56",
+      "name": "Enviar Texto5 sin stock",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Eres un clasificador de fechas para agendamiento de entregas.\n\n## FECHA ACTUAL\n{{ $now.setZone('America/Mexico_City').toFormat('cccc dd \\'de\\' LLLL yyyy HH:mm') }}\n\n## MENSAJE\n{{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}\n\n## REGLAS\n- Cada cita dura 1 hora\n- \"en la mañana\" → 09:00, \"en la tarde\" → 14:00, \"en la noche\" → 18:00\n- Sin hora → 10:00, Sin fecha → fecha_completa: false\n- Zona horaria: America/Mexico_City (-06:00)\n\n## RESPUESTA (solo JSON, sin markdown):\n{\n  \"intencion\": \"agendar\",\n  \"fecha_completa\": true/false,\n  \"fecha_solicitada\": \"2026-03-15T10:00:00-06:00\",\n  \"fecha_fin\": \"2026-03-15T11:00:00-06:00\",\n  \"fecha_legible\": \"Domingo 15 de marzo a las 10:00 AM\",\n  \"mensaje_falta_info\": \"texto amigable si no dio fecha\"\n}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        3424,
+        3392
+      ],
+      "id": "69dde7a8-1094-48e1-846d-9cd27798a4e5",
+      "name": "IA Extrae Fecha1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3424,
+        3664
+      ],
+      "id": "c9b88602-6cc1-4561-bc0f-f7740530b4d9",
+      "name": "OpenAI agenda",
+      "credentials": {
+        "openAiApi": {
+          "id": "rfXLu5mt4qDaRuXb",
+          "name": "OpenAi account Proagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text;\nconst clean = raw.replace(/```json|```/g, '').trim();\ntry {\n  return [{ json: JSON.parse(clean) }];\n} catch(e) {\n  return [{ json: { tiene_fecha: false, fecha_completa: false } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        3392
+      ],
+      "id": "d34ad290-54f2-43e0-8c59-e4c7e86ddf39",
+      "name": "Parsear JSON1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c001",
+              "leftValue": "={{ $json.fecha_completa }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4048,
+        3440
+      ],
+      "id": "8fef7741-3848-4740-95c1-14ea0702ef55",
+      "name": "IF tiene fecha1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "proagroindustria26@gmail.com",
+          "mode": "list",
+          "cachedResultName": "proagroindustria26@gmail.com"
+        },
+        "limit": 10,
+        "timeMin": "={{ $json.fecha_solicitada }}",
+        "timeMax": "={{ $json.fecha_fin }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        4288,
+        3296
+      ],
+      "id": "38126f48-05c6-479d-b80f-298396764437",
+      "name": "Buscar eventos en ese horario1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Oa9BU5RpJiN17Xbc",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const eventos = $input.all();\nconst ocupado = eventos.some(e => e.json.id);\nconst datos = $('Parsear JSON1').first().json;\nreturn [{\n  json: {\n    disponible: !ocupado,\n    fecha_inicio: datos.fecha_solicitada,\n    fecha_fin: datos.fecha_fin,\n    fecha_legible: datos.fecha_legible\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4576,
+        3296
+      ],
+      "id": "5600a152-2e93-4f4c-8189-24fc636c8749",
+      "name": "¿Está disponible?1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c002",
+              "leftValue": "={{ $json.disponible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4816,
+        3296
+      ],
+      "id": "5f4e4ace-be91-4408-8f7d-a7f475a1f926",
+      "name": "IF libre u ocupado1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM pedidos\nWHERE telefono = '{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}'\nORDER BY creado_en DESC\nLIMIT 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5216,
+        3072
+      ],
+      "id": "810a09a3-d052-48fc-b572-45c5baf2f72b",
+      "name": "Execute a SQL query1 ultimo pedido",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "proagroindustria26@gmail.com",
+          "mode": "list",
+          "cachedResultName": "proagroindustria26@gmail.com"
+        },
+        "start": "={{ $('Parsear JSON1').first().json.fecha_solicitada }}",
+        "end": "={{ $('Parsear JSON1').first().json.fecha_fin }}",
+        "additionalFields": {
+          "summary": "=id_pedido: {{ $json.id_pedido }}\ncantidad: {{ $json.cantidad }}\nproducto: {{ $json.nombre_producto }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        5520,
+        3072
+      ],
+      "id": "f23e2263-cc95-4bdc-ad17-50e304404c3c",
+      "name": "Crear evento1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Oa9BU5RpJiN17Xbc",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos",
+          "mode": "list",
+          "cachedResultName": "pedidos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "confirmado",
+            "id_pedido": "={{ $('Execute a SQL query1 ultimo pedido').first().json.id_pedido }}"
+          },
+          "matchingColumns": [
+            "id_pedido"
+          ],
+          "schema": [
+            {
+              "id": "id_pedido",
+              "displayName": "id_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5792,
+        3072
+      ],
+      "id": "fdc58133-74f1-46d5-85ea-a49012d3bc29",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m001",
+              "name": "respuesta",
+              "value": "=✅ ¡Entrega confirmada!\n📅 {{ $('¿Está disponible?1').first().json.fecha_legible }}\n\nDatos del pedido:\nID: {{ $('Execute a SQL query1 ultimo pedido').item.json.id_pedido }}\nProducto: {{ $('Execute a SQL query1 ultimo pedido').item.json.id_producto }} - {{ $('Execute a SQL query1 ultimo pedido').item.json.nombre_producto }}\nCantidad: {{ $('Execute a SQL query1 ultimo pedido').item.json.cantidad }}\nTotal: ${{ $('Execute a SQL query1 ultimo pedido').item.json.total }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6112,
+        3104
+      ],
+      "id": "e5e4a431-8d60-43ae-8d5e-490778e62f4e",
+      "name": "Msg Confirmado1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m002",
+              "name": "respuesta",
+              "value": "=❌ Lo sentimos, el horario *{{ $json.fecha_legible }}* ya está ocupado.\n\n¿Qué otra fecha y hora te queda bien? 😊",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5216,
+        3488
+      ],
+      "id": "7dc85aae-821c-4107-a259-588cd939d3b1",
+      "name": "Msg Ocupado1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m003",
+              "name": "respuesta",
+              "value": "Hola 👋 Para agendar tu entrega dime:\n\n📅 ¿Qué fecha y hora te queda bien?\n\nEjemplo: *\"El lunes 15 de marzo a las 3 de la tarde\"*",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4352,
+        3600
+      ],
+      "id": "37e5a86f-a07b-4bfc-b275-292dbcc6be78",
+      "name": "Msg Pedir Fecha1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            },
+            {
+              "name": "text.body",
+              "value": "={{ $json.respuesta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6240,
+        3664
+      ],
+      "id": "3a4c2a35-06fb-4848-bcea-e2b027379ef1",
+      "name": "Enviar WhatsApp1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fuentes = [\n  () => $('AI Agent consultas').first().json?.output,\n  () => $('Respuestas sin consulta').first().json?.output,\n  () => $('Msg Confirmado1').first().json?.respuesta,\n  () => $('Msg Ocupado1').first().json?.respuesta,\n  () => $('Msg Pedir Fecha1').first().json?.respuesta,\n];\n\nlet respuesta = '';\nfor (const fn of fuentes) {\n  try {\n    const val = fn();\n    if (val && val.trim() !== '') {\n      respuesta = val;\n      break;\n    }\n  } catch(e) {}\n}\n\nreturn [{ json: { respuesta } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7312,
+        1520
+      ],
+      "id": "9af833d4-1759-414c-803a-3a9941f58886",
+      "name": "Capturar respuesta enviada"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "historial_conversaciones",
+          "mode": "list",
+          "cachedResultName": "historial_conversaciones"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}",
+            "pregunta": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}",
+            "respuesta": "={{ $json.respuesta }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pregunta",
+              "displayName": "pregunta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "respuesta",
+              "displayName": "respuesta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7616,
+        1520
+      ],
+      "id": "bfac0fa5-7562-40fc-be2d-21ac72dfb77b",
+      "name": "memoria de conversacion",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE usuario_perfil SET\n  ultima_intencion = '{{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body.replace(/'/g, \"''\") }}',\n  ultimo_contexto = '{{ ($('Contexto para siguiente fase').first().json.categoria + ' - ' + ($('Contexto para siguiente fase').first().json.ultimo_contexto ?? '')).substring(0,200).replace(/'/g, \"''\") }}',\n  actualizado_en = NOW()\nWHERE telefono = '{{ $('Webhook1').first().json.body.whatsappInboundMessage.from }}';\n\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7888,
+        1520
+      ],
+      "id": "3ba9327c-47d3-4e93-82bc-ff244fc76e9c",
+      "name": "Actualizar perfil usuario",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "43958fa0-05d3-4f0d-9f86-7f577a94204a",
+              "leftValue": "={{ JSON.parse($('Basic LLM Chain2').first().json.text).cantidad }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4448,
+        2336
+      ],
+      "id": "72b31fbf-64d4-4f21-9ed7-bbd5e7fb2dbc",
+      "name": "Stock_suficiente?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.from.trim() }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=Entendido, ¿cuántas unidades de \n{{ JSON.parse($('Basic LLM Chain2').first().json.text).producto }} \nnecesitas?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4768,
+        2592
+      ],
+      "id": "0285b27f-3e34-4a77-87a6-0827c7b523aa",
+      "name": "Enviar Texto6 opciones1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Consulta la base de pedidos en postgres : (id_pedido,telefono,empresa,nombre_producto,cantidad,total,creado_en,precio,estado)",
+        "text": "={{ $('Webhook1').first().json.body.whatsappInboundMessage.text.body }}",
+        "options": {
+          "systemMessage": "=# Asistente postgres - pedidos\n\nCampos disponibles:\n-id_pedido: es el identificador del pedido\n-telefono: es el telefono al que esta ligado\n-empresa: la empresa a la que pertenece el usuario\n-id_producto: el id del producto\n-nombre_producto: el nombre del producto\n-cantidad: la cantidad de producto \n-total: el total del precio\n-creado_en: el dia que se creo\n-precio: el precio del producto\n-estado: es la forma en la que esta el producto puede ser pendiente_fecha\t\nsignifica que le falta la fecha\n\n\n\n\n\n\n\n\nReglas:\n- SIEMPRE ejecuta postgres antes de responder\n- Búsquedas con LOWER() y LIKE %palabra%\n- NUNCA inventes datos\n- Responde en lenguaje natural con los resultados reales"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        4704,
+        560
+      ],
+      "id": "4ff4410d-5128-47ee-86b0-f2b0b9fb2a01",
+      "name": "INFORMACION DE PEDIDOS"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{  $fromAI('sql') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        4864,
+        992
+      ],
+      "id": "5fc289ee-8e23-48a0-b0f0-c2e98e228266",
+      "name": "Execute a SQL query in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.to }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Webhook1').item.json.body.whatsappInboundMessage.from }}"
+            },
+            {
+              "name": "=type",
+              "value": "=text"
+            },
+            {
+              "name": "text.body",
+              "value": "=que quieres realizar hoy?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1264,
+        304
+      ],
+      "id": "46868360-536c-4307-88b7-c84d3bd35278",
+      "name": "Pedir empresa1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AXMZ6Oxi4lPRVqNR",
+          "name": "Ycloud"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select pregunta,respuesta from historial_conversaciones",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2208,
+        576
+      ],
+      "id": "e5a324be-d43f-4e76-9fff-cd0237d1bf98",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "MIrTWgnOfEdlbr8Z",
+          "name": "POSTGRES SERVIDOR PROAGRO"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "usuarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "usuarios": {
+      "main": [
+        [
+          {
+            "node": "Existe el registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existe el registro": {
+      "main": [
+        [
+          {
+            "node": "Extraer datos usuario nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "traer el registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI nuevo usuario": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extraer datos usuario nuevo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer datos usuario nuevo": {
+      "main": [
+        [
+          {
+            "node": "Parsear datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear datos": {
+      "main": [
+        [
+          {
+            "node": "Tiene nombre?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene nombre?": {
+      "main": [
+        [
+          {
+            "node": "Tiene empresa tambien?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Saludo inicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene empresa tambien?": {
+      "main": [
+        [
+          {
+            "node": "Crear perfil completo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear perfil solo nombre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear perfil solo nombre": {
+      "main": [
+        [
+          {
+            "node": "Pedir empresa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "traer el registro": {
+      "main": [
+        [
+          {
+            "node": "Le falta empresa?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Le falta empresa?": {
+      "main": [
+        [
+          {
+            "node": "Extraer empresa usuario existente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar saldo en SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI empresa existente": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extraer empresa usuario existente",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer empresa usuario existente": {
+      "main": [
+        [
+          {
+            "node": "Empresa detectada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Empresa detectada?": {
+      "main": [
+        [
+          {
+            "node": "Guardar empresa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pedir empresa a usuario existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar empresa": {
+      "main": [
+        [
+          {
+            "node": "Bienvenida con empresa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bienvenida con empresa": {
+      "main": [
+        [
+          {
+            "node": "Buscar saldo en SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar saldo en SQL": {
+      "main": [
+        [
+          {
+            "node": "Evaluar saldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar saldo": {
+      "main": [
+        [
+          {
+            "node": "Tiene saldo pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene saldo pendiente?": {
+      "main": [
+        [
+          {
+            "node": "Avisar saldo pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Activar la memoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar saldo pendiente": {
+      "main": [
+        [
+          {
+            "node": "Activar la memoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activar la memoria": {
+      "main": [
+        [
+          {
+            "node": "Ultimos 10 mensajes maquina",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ultimos 10 mensajes maquina": {
+      "main": [
+        [
+          {
+            "node": "Fecha Pedido pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fecha Pedido pendiente?": {
+      "main": [
+        [
+          {
+            "node": "es un pedido pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI clasificador": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "es un pedido pendiente?",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "es un pedido pendiente?": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Contexto para siguiente fase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto para siguiente fase": {
+      "main": [
+        [
+          {
+            "node": "Elejir el camino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elejir el camino": {
+      "main": [
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuestas sin consulta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Extrae Fecha1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuestas sin consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI agente consultas": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Información Catalogo",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Información de clientes",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "INFORMACION DE PEDIDOS",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Información Catalogo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Información de clientes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "catalogo": {
+      "ai_tool": [
+        [
+          {
+            "node": "Información Catalogo",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "buscador de producto",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clientes1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Información de clientes",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent consultas": {
+      "main": [
+        [
+          {
+            "node": "Enviar respuesta consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar respuesta consulta": {
+      "main": [
+        [
+          {
+            "node": "Capturar respuesta enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI pedidos": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Analizador de respuestas",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "buscador de producto",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2 buscar producto historial",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Respuestas sin consulta",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "If3 producto vacio?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3 producto vacio?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2 buscar producto historial",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript4 merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2 buscar producto historial": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4 merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4 merge": {
+      "main": [
+        [
+          {
+            "node": "Stock_suficiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscador de producto": {
+      "main": [
+        [
+          {
+            "node": "Analizador de respuestas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizador de respuestas": {
+      "main": [
+        [
+          {
+            "node": "Se encontro el producto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se encontro el producto": {
+      "main": [
+        [
+          {
+            "node": "leer_stock_real",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Texto6 opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "leer_stock_real": {
+      "main": [
+        [
+          {
+            "node": "Stock suficiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock suficiente?": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query insertar pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Texto5 sin stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query insertar pedido": {
+      "main": [
+        [
+          {
+            "node": "Enviar Texto4 pedido ok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Texto4 pedido ok": {
+      "main": [
+        [
+          {
+            "node": "Capturar respuesta enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Texto5 sin stock": {
+      "main": [
+        [
+          {
+            "node": "Capturar respuesta enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Texto6 opciones": {
+      "main": [
+        [
+          {
+            "node": "Capturar respuesta enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI agenda": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA Extrae Fecha1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Extrae Fecha1": {
+      "main": [
+        [
+          {
+            "node": "Parsear JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear JSON1": {
+      "main": [
+        [
+          {
+            "node": "IF tiene fecha1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF tiene fecha1": {
+      "main": [
+        [
+          {
+            "node": "Buscar eventos en ese horario1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg Pedir Fecha1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar eventos en ese horario1": {
+      "main": [
+        [
+          {
+            "node": "¿Está disponible?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Está disponible?1": {
+      "main": [
+        [
+          {
+            "node": "IF libre u ocupado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF libre u ocupado1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1 ultimo pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg Ocupado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1 ultimo pedido": {
+      "main": [
+        [
+          {
+            "node": "Crear evento1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear evento1": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Msg Confirmado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg Confirmado1": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg Ocupado1": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg Pedir Fecha1": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp1": {
+      "main": [
+        [
+          {
+            "node": "Capturar respuesta enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuestas sin consulta": {
+      "main": [
+        [
+          {
+            "node": "Enviar saludo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar saludo": {
+      "main": [
+        [
+          {
+            "node": "Capturar respuesta enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capturar respuesta enviada": {
+      "main": [
+        [
+          {
+            "node": "memoria de conversacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memoria de conversacion": {
+      "main": [
+        [
+          {
+            "node": "Actualizar perfil usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock_suficiente?": {
+      "main": [
+        [
+          {
+            "node": "buscador de producto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Texto6 opciones1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INFORMACION DE PEDIDOS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent consultas",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "INFORMACION DE PEDIDOS",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear perfil completo": {
+      "main": [
+        [
+          {
+            "node": "Pedir empresa1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "153da573-a61d-40fc-b131-676e70cab55a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ef28162938599b5ac42be8c5eac9848b346ee13b50678a25cf8bd64027e956d7"
+  },
+  "id": "a_dZpA7c5Cn0cZD-xUDN5",
+  "tags": []
+}
